@@ -4,7 +4,7 @@
 	
     <groupId>uk.ac.ceh.components</groupId>
     <artifactId>components-parent</artifactId>
-    <version>0.1</version>
+    <version>0.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -22,8 +22,8 @@
     </modules>
 	
     <scm>
-        <url>http://www.svn.com/tags/components-parent-0.1</url>
-        <connection>scm:svn:http://cjohn:XP76sqZ@svn.ceh.ac.uk/svn/ceh-commons/tags/components-parent-0.1</connection>
+        <url>http://svn.ceh.ac.uk/svn/ceh-commons/</url>
+        <connection>scm:svn:http://cjohn:XP76sqZ@svn.ceh.ac.uk/svn/ceh-commons/trunk</connection>
     </scm>
     <build>
         <pluginManagement>
