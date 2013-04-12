@@ -6,13 +6,7 @@ db-api/src/main/java/uk/org/ukeof/db/DataRepositoryException.java -text
 db-api/src/main/java/uk/org/ukeof/db/DataRevision.java -text
 db-api/src/main/java/uk/org/ukeof/db/DataSubmissionListener.java -text
 db-git/pom.xml -text
-db-git/pom.xml.releaseBackup -text
 db-git/src/main/java/uk/org/ukeof/db/git/GitAuthorResolver.java -text
 db-git/src/main/java/uk/org/ukeof/db/git/GitDataRepository.java -text
 db-git/src/main/java/uk/org/ukeof/db/git/GitDataRevision.java -text
-db-git/target/classes/uk/org/ukeof/db/git/GitAuthorResolver.class -text
-db-git/target/classes/uk/org/ukeof/db/git/GitDataRepository.class -text
-db-git/target/classes/uk/org/ukeof/db/git/GitDataRevision.class -text
-db-git/target/db-git-0.1.jar -text
-db-git/target/maven-archiver/pom.properties -text
 /pom.xml -text
