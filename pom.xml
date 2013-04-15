@@ -17,8 +17,8 @@
     </properties>
 
     <modules>
-        <module>db-api</module>
-        <module>db-git</module>
+        <module>datastore-api</module>
+        <module>datastore-git</module>
     </modules>
 	
     <scm>
