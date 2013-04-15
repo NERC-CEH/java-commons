@@ -3,3 +3,4 @@ datastore-api/target
 datastore-git/target
 /target
 tokengeneration-api/target
+tokengeneration-stateless/target

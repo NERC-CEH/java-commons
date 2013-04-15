@@ -26,9 +26,6 @@ public interface TokenGenerator {
      * @param ttl The length of time (in milliseconds) which this token should be
      *  valid for
      * @return the token representation of the messageBuffer
-     * @throws TokenGenerationException if it is not possible to process the 
-     *  messageBuf into a Token, the ttl can not be ensured or the TokenGenerator
-     *  is mis-configured.
      */
-    Token generateToken(ByteBuffer messageBuf, int ttl) throws TokenGenerationException;
+    Token generateToken(ByteBuffer messageBuf, int ttl);
 }

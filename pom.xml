@@ -20,6 +20,7 @@
         <module>datastore-api</module>
         <module>datastore-git</module>
         <module>tokengeneration-api</module>
+        <module>tokengeneration-stateless</module>
     </modules>
 	
     <scm>
