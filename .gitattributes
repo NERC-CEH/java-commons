@@ -10,3 +10,9 @@ datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitAuthorResolver
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRepository.java -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRevision.java -text
 /pom.xml -text
+tokengeneration-api/pom.xml -text
+tokengeneration-api/src/main/java/uk/ac/ceh/components/tokengeneration/ExpiredTokenException.java -text
+tokengeneration-api/src/main/java/uk/ac/ceh/components/tokengeneration/InvalidTokenException.java -text
+tokengeneration-api/src/main/java/uk/ac/ceh/components/tokengeneration/Token.java -text
+tokengeneration-api/src/main/java/uk/ac/ceh/components/tokengeneration/TokenGenerationException.java -text
+tokengeneration-api/src/main/java/uk/ac/ceh/components/tokengeneration/TokenGenerator.java -text
