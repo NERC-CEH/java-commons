@@ -1,8 +1,8 @@
-package uk.org.ukeof.db.git;
+package uk.ac.ceh.components.datastore.git;
 
 import org.eclipse.jgit.revwalk.RevCommit;
-import uk.org.ukeof.db.DataAuthor;
-import uk.org.ukeof.db.DataRevision;
+import uk.ac.ceh.components.datastore.DataAuthor;
+import uk.ac.ceh.components.datastore.DataRevision;
 
 /**
  *

@@ -1,4 +1,4 @@
-package uk.org.ukeof.db.git;
+package uk.ac.ceh.components.datastore.git;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -22,7 +22,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import uk.org.ukeof.db.*;
+import uk.ac.ceh.components.datastore.*;
 
 /**
  *

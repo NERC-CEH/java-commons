@@ -1,4 +1,4 @@
-package uk.org.ukeof.db.git;
+package uk.ac.ceh.components.datastore.git;
 
 /**
  *

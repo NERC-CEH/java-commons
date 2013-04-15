@@ -51,7 +51,7 @@
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
                     <goals>deploy</goals>
-                    <scmCommentPrefix>[bus-core-api-release-checkin]-</scmCommentPrefix>
+                    <scmCommentPrefix>[Maven Release]-</scmCommentPrefix>
                 </configuration>
             </plugin>
         </plugins>

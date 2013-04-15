@@ -7,14 +7,14 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>db-git</artifactId>
+    <artifactId>datastore-git</artifactId>
 
     <name>${project.artifactId}-${project.version}</name>
     
     <dependencies>
         <dependency>
             <groupId>uk.ac.ceh.components</groupId>
-            <artifactId>db-api</artifactId>
+            <artifactId>datastore-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

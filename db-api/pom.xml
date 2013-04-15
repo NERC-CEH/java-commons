@@ -7,7 +7,7 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>db-api</artifactId>
+    <artifactId>datastore-api</artifactId>
 
     <name>${project.artifactId}-${project.version}</name>
 
