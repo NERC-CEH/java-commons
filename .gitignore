@@ -1,2 +1,4 @@
 /build-number.txt
+datastore-api/target
+datastore-git/target
 /target
