@@ -2,5 +2,9 @@
 datastore-api/target
 datastore-git/target
 /target
-tokengeneration-api/target
+token-authentication-api/target
+token-authentication-crowd/target
+token-generation-api/target
+/token-generation-stateless
+token-generation-stateless/target
 tokengeneration-stateless/target
