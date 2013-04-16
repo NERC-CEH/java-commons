@@ -5,6 +5,8 @@ datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataRepository.java -
 datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataRepositoryException.java -text
 datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataRevision.java -text
 datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataSubmissionListener.java -text
+datastore-api/src/main/java/uk/ac/ceh/components/datastore/DropIndexesEvent.java -text
+datastore-api/src/main/java/uk/ac/ceh/components/datastore/IndexFileEvent.java -text
 datastore-git/pom.xml -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitAuthorBuilder.java -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRepository.java -text

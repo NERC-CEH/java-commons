@@ -1,5 +1,6 @@
 package uk.ac.ceh.components.datastore.git;
 
+import com.google.common.eventbus.EventBus;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -33,14 +34,14 @@ import uk.ac.ceh.components.userstore.UserStore;
  * @author cjohn
  */
 public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<A> {
-    private final List<DataSubmissionListener<A>> listeners;
     private final Repository repository;
     private final UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver;
     private final File root;
+    private final EventBus events;
     
-    public GitDataRepository(File data, UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver) throws IOException {
+    public GitDataRepository(File data, UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver, EventBus events) throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        this.listeners = new ArrayList<>();
+        this.events = events;
         this.root = data;
         this.authorResolver = authorResolver;
         repository = builder.setGitDir(new File(data, ".git"))
@@ -147,21 +148,11 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             throw new DataRepositoryException(ex);
         }
     }
-    
-    @Override public void addDataSubmissionListener(DataSubmissionListener<A> listener) {
-        listeners.add(listener);
-    }
-
-    @Override public boolean removeDataSubmissionListener(DataSubmissionListener<A> listener) {
-        return listeners.remove(listener);
-    }
 
     @Override
     public void triggerReindex() {
-        for(DataSubmissionListener<A> curr : listeners) {
-            curr.dropIndexes();
-            indexFile(root);
-        }
+        events.post(new DropIndexesEvent());
+        indexFile(root);
     }
     
     private void indexFile(File toIndex) {
@@ -171,9 +162,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             }
         }
         else {
-            for(DataSubmissionListener<A> curr : listeners) {
-                curr.indexFile(toIndex);
-            }
+            events.post(new IndexFileEvent(toIndex));           
         }
     }
     

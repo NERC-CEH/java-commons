@@ -15,7 +15,5 @@ public interface DataRepository<A extends DataAuthor> {
     DataRevision<A> submitData(A author, String message, Map<String, InputStream> data) throws DataRepositoryException;
     List<DataRevision<A>> getRevisions(String filename) throws DataRepositoryException;
     
-    void addDataSubmissionListener(DataSubmissionListener<A> listener);
-    boolean removeDataSubmissionListener(DataSubmissionListener<A> listener);
     void triggerReindex();
 }
