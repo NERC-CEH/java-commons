@@ -22,7 +22,6 @@
         <module>token-generation-api</module>
         <module>token-generation-stateless</module>
         <module>token-authentication-api</module>
-        <module>token-authentication-crowd</module>
     </modules>
 	
     <scm>
