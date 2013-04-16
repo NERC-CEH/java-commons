@@ -11,7 +11,6 @@ datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRepository
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRevision.java -text
 /pom.xml -text
 token-authentication-api/pom.xml -text
-token-authentication-api/src/main/java/uk/ac/ceh/components/tokenauthentication/InvalidCredentialsException.java -text
 token-authentication-api/src/main/java/uk/ac/ceh/components/tokenauthentication/TokenAuthenticator.java -text
 token-generation-api/pom.xml -text
 token-generation-api/src/main/java/uk/ac/ceh/components/tokengeneration/ExpiredTokenException.java -text
@@ -23,3 +22,8 @@ token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/st
 token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenKeyContainer.java -text
 token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenKeystoreManager.java -text
 token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenKeystoreManagerException.java -text
+userstore-api/pom.xml -text
+userstore-api/src/main/java/uk/ac/ceh/components/userstore/InvalidCredentialsException.java -text
+userstore-api/src/main/java/uk/ac/ceh/components/userstore/UnknownUserException.java -text
+userstore-api/src/main/java/uk/ac/ceh/components/userstore/UserBuilder.java -text
+userstore-api/src/main/java/uk/ac/ceh/components/userstore/UserStore.java -text

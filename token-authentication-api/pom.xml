@@ -17,5 +17,10 @@
             <artifactId>token-generation-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.ac.ceh.components</groupId>
+            <artifactId>userstore-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

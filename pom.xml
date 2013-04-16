@@ -22,6 +22,7 @@
         <module>token-generation-api</module>
         <module>token-generation-stateless</module>
         <module>token-authentication-api</module>
+        <module>userstore-api</module>
     </modules>
 	
     <scm>

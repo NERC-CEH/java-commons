@@ -1,8 +1,8 @@
-package uk.ac.ceh.components.tokenauthentication;
+package uk.ac.ceh.components.userstore;
 
 /**
  * The following exception will be thrown if invalid credentials are specified
- * when attempting to generate a Token
+ * when attempting to authenticate a user
  * @author Christopher Johnson
  */
 public class InvalidCredentialsException extends Exception {

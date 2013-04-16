@@ -3,6 +3,7 @@ package uk.ac.ceh.components.tokenauthentication;
 import uk.ac.ceh.components.tokengeneration.ExpiredTokenException;
 import uk.ac.ceh.components.tokengeneration.InvalidTokenException;
 import uk.ac.ceh.components.tokengeneration.Token;
+import uk.ac.ceh.components.userstore.InvalidCredentialsException;
 
 /**
  * The following interface defines the methods required in order to be a 
