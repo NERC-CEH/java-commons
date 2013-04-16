@@ -7,14 +7,14 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>tokengeneration-stateless</artifactId>
+    <artifactId>token-generation-stateless</artifactId>
 
     <name>${project.artifactId}-${project.version}</name>
 
     <dependencies>
         <dependency>
             <groupId>uk.ac.ceh.components</groupId>
-            <artifactId>tokengeneration-api</artifactId>
+            <artifactId>token-generation-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
