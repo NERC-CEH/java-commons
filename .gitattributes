@@ -6,7 +6,7 @@ datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataRepositoryExcepti
 datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataRevision.java -text
 datastore-api/src/main/java/uk/ac/ceh/components/datastore/DataSubmissionListener.java -text
 datastore-git/pom.xml -text
-datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitAuthorResolver.java -text
+datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitAuthorBuilder.java -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRepository.java -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRevision.java -text
 /pom.xml -text

@@ -16,6 +16,7 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -23,6 +24,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import uk.ac.ceh.components.datastore.*;
+import uk.ac.ceh.components.userstore.UnknownUserException;
+import uk.ac.ceh.components.userstore.UserStore;
 
 /**
  *
@@ -31,10 +34,10 @@ import uk.ac.ceh.components.datastore.*;
 public class GitDataRepository<A extends DataAuthor> implements DataRepository<A> {
     private final List<DataSubmissionListener<A>> listeners;
     private final Repository repository;
-    private final GitAuthorResolver<A> authorResolver;
+    private final UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver;
     private final File root;
     
-    public GitDataRepository(File data, GitAuthorResolver<A> authorResolver) throws IOException {
+    public GitDataRepository(File data, UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver) throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         this.listeners = new ArrayList<>();
         this.root = data;
@@ -127,12 +130,19 @@ public class GitDataRepository<A extends DataAuthor> implements DataRepository<A
                     .add(git.getRepository().resolve(Constants.HEAD))
                     .addPath(name);
             for(RevCommit commit : logCommand.call()) {
-                A author = authorResolver.getAuthor(commit.getAuthorIdent().getName());
+                PersonIdent authorIdent = commit.getAuthorIdent();
+                String username = authorIdent.getName();
+                A author = (authorResolver.userExists(username)) 
+                        ? authorResolver.getUser(username) 
+                        : authorResolver.getPhantomUserBuilder()
+                                        .setUsername(username)
+                                        .setEmail(authorIdent.getEmailAddress())
+                                        .build();
                 toReturn.add(new GitDataRevision<>(author, commit));
             }
             return toReturn;
         }
-        catch(IOException  | GitAPIException ex) {
+        catch(IOException | GitAPIException | UnknownUserException ex) {
             throw new DataRepositoryException(ex);
         }
     }
