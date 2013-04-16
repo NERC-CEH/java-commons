@@ -21,8 +21,8 @@
         <module>datastore-git</module>
         <module>token-generation-api</module>
         <module>token-generation-stateless</module>
-        <module>token-authentication-api</module>
         <module>userstore-api</module>
+        <module>userstore-token-authentication</module>
     </modules>
 	
     <scm>

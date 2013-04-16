@@ -25,13 +25,14 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import uk.ac.ceh.components.datastore.*;
 import uk.ac.ceh.components.userstore.UnknownUserException;
+import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.UserStore;
 
 /**
  *
  * @author cjohn
  */
-public class GitDataRepository<A extends DataAuthor> implements DataRepository<A> {
+public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<A> {
     private final List<DataSubmissionListener<A>> listeners;
     private final Repository repository;
     private final UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver;

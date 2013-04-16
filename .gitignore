@@ -2,8 +2,8 @@
 datastore-api/target
 datastore-git/target
 /target
-token-authentication-api/target
 token-generation-api/target
 /token-generation-stateless
 token-generation-stateless/target
 userstore-api/target
+userstore-token-authentication/target

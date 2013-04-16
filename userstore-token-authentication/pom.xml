@@ -7,7 +7,7 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>token-authentication-api</artifactId>
+    <artifactId>userstore-token-authentication</artifactId>
 
     <name>${project.artifactId}-${project.version}</name>
 
