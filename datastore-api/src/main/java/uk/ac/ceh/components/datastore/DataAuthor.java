@@ -6,5 +6,5 @@ package uk.ac.ceh.components.datastore;
  */
 public interface DataAuthor {
     String getEmail();
-    String getID();
+    String getUsername();
 }

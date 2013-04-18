@@ -22,6 +22,7 @@
         <module>token-generation-api</module>
         <module>token-generation-stateless</module>
         <module>userstore-api</module>
+        <module>userstore-inmemory</module>
         <module>userstore-token-authentication</module>
     </modules>
 	

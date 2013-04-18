@@ -95,7 +95,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             RevCommit revision = new Git(repository)
                                      .commit()
                                      .setMessage(message)
-                                     .setAuthor(author.getID(), author.getEmail()).call();
+                                     .setAuthor(author.getUsername(), author.getEmail()).call();
             
             return new GitDataRevision(author, revision);
         } catch (GitAPIException | IOException ex) {
@@ -116,7 +116,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             RevCommit revision = new Git(repository)
                                         .commit()
                                         .setMessage(message)
-                                        .setAuthor(author.getID(), author.getEmail()).call();
+                                        .setAuthor(author.getUsername(), author.getEmail()).call();
 
             return new GitDataRevision(author, revision);
         } catch (GitAPIException ex) {

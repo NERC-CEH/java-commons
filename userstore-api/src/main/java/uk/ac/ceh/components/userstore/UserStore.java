@@ -17,15 +17,6 @@ public interface UserStore<U extends User, B extends UserBuilder<U>> {
     U getUser(String username) throws UnknownUserException;
     
     /**
-     * The following method will return the user associated with the given userId
-     * @param username
-     * @return The User if the userId exists
-     * @throws UnknownUserException if the username does not resolve to a user in
-     *  this userstore
-     */
-    U getUser(int userId) throws UnknownUserException;
-    
-    /**
      * The following method will return the boolean state on whether or not a user
      * with this username exists in this UserStore
      * @param username

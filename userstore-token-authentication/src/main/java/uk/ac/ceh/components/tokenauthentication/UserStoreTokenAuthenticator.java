@@ -27,21 +27,19 @@ public class UserStoreTokenAuthenticator<U extends User> implements TokenAuthent
     @Override
     public Token generateToken(String username, String password, int ttl) throws InvalidCredentialsException {
         U user = users.authenticate(username, password);
-        return tokenGen.generateToken(getIntAsBuffer(user.getUserId()), ttl);
+        return tokenGen.generateToken(ByteBuffer.wrap(user.getUsername().getBytes()), ttl);
     }
 
     @Override
     public U getUser(Token token) throws InvalidTokenException, ExpiredTokenException {
         try {
-            return users.getUser(tokenGen.getMessage(token).getInt());
+            ByteBuffer message = tokenGen.getMessage(token);
+            byte[] messageBytes = new byte[message.remaining()];
+            message.get(messageBytes);
+            
+            return users.getUser(new String(messageBytes));
         } catch (UnknownUserException ex) {
             throw new InvalidTokenException("No user exists for this token", ex);
         }
-    }
-    
-    private static ByteBuffer getIntAsBuffer(int id) {
-        ByteBuffer toReturn = ByteBuffer.allocate(4).putInt(id);
-        toReturn.flip();
-        return toReturn;
     }
 }
