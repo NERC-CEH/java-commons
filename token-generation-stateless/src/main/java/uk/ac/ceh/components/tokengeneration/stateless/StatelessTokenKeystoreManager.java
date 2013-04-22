@@ -20,9 +20,10 @@ import javax.crypto.SecretKey;
  * @author Christopher Johnson
  */
 public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer {
-    private static char[] DEFAULT_KEYSTORE_PASSWORD = "changeit".toCharArray();
-    private static String DEFAULT_MAC_ALIAS = "token-hmac";
-    private static String DEFAULT_KEY_ALIAS = "token-key";
+    private static final char[] DEFAULT_KEYSTORE_PASSWORD = "changeit".toCharArray();
+    private static final String DEFAULT_MAC_ALIAS = "token-hmac";
+    private static final String DEFAULT_KEY_ALIAS = "token-key";
+    private static final String DEFAULT_KEYSTORE_TYPE = "JCEKS";
     
     private final File keyFile;
     private final char[] password;
@@ -85,7 +86,7 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
     
     private void loadKeys() throws StatelessTokenKeystoreManagerException {
         try {
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
         
             PasswordProtection passwordProtection = new PasswordProtection(password);
             try (FileInputStream in = new FileInputStream(keyFile)) {
@@ -108,7 +109,7 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
     }
     
     private void saveKeys() throws KeyStoreException {
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
         PasswordProtection passwordProtection = new PasswordProtection(password);
         ks.setEntry(keyAlias, new SecretKeyEntry(key), passwordProtection);
         ks.setEntry(hmacAlias, new SecretKeyEntry(hmac), passwordProtection);

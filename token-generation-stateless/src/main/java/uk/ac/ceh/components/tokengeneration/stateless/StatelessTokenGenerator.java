@@ -29,7 +29,7 @@ public class StatelessTokenGenerator implements TokenGenerator {
     
     private StatelessTokenKeyContainer keys;
     
-    public StatelessTokenGenerator(StatelessTokenKeyContainer keys) throws NoSuchAlgorithmException {
+    public StatelessTokenGenerator(StatelessTokenKeyContainer keys) {
         this.keys = keys;
     }
     
