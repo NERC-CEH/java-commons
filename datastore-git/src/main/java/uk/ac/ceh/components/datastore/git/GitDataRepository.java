@@ -1,7 +1,10 @@
 package uk.ac.ceh.components.datastore.git;
 
 import com.google.common.eventbus.EventBus;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -15,7 +18,7 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.RmCommand;
-import org.eclipse.jgit.api.errors.*;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
@@ -27,23 +30,46 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import uk.ac.ceh.components.datastore.*;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
+import uk.ac.ceh.components.userstore.UserBuilderFactory;
 import uk.ac.ceh.components.userstore.UserStore;
 
 /**
+ * The following is a concrete implementation of a DataRepository. It is based 
+ * upon the software version control system Git.
  *
+ * DataAuthors of this implementation come from some given userstore. Since
+ * it is a valid situation that users can be deleted from the userstore but 
+ * still have revision history associated to them, a UserBuilderFactory needs to
+ * be provided which can create DataAuthors are of type A.
  * @author cjohn
  */
 public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<A> {
     private final Repository repository;
-    private final UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver;
+    private final UserStore<A> authorResolver;
     private final File root;
     private final EventBus events;
+    private final UserBuilderFactory<? extends GitAuthorBuilder<A>> phantomUserFactory;
     
-    public GitDataRepository(File data, UserStore<A, ? extends GitAuthorBuilder<A>> authorResolver, EventBus events) throws IOException {
+    /**
+     * The following is the constructor for the GitDataRepository.
+     * 
+     * @param data A folder which contains a git repository
+     * @param authorResolver A userStore which will be the primary source for 
+     *  obtaining GitAuthorUsers
+     * @param phantomUserFactory The userbuilder factory which will be used to create
+     *  phantom users, that is. Users who do not exist in the UserStore but have
+     *  revision history associated to them
+     * @param events
+     * @throws IOException 
+     */
+    public GitDataRepository(File data, UserStore<A> authorResolver, 
+                                UserBuilderFactory<? extends GitAuthorBuilder<A>> phantomUserFactory, 
+                                EventBus events) throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         this.events = events;
         this.root = data;
         this.authorResolver = authorResolver;
+        this.phantomUserFactory = phantomUserFactory;
         repository = builder.setGitDir(new File(data, ".git"))
             .readEnvironment() // scan environment GIT_* variables
             .findGitDir() // scan up the file system tree
@@ -136,8 +162,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                 String username = authorIdent.getName();
                 A author = (authorResolver.userExists(username)) 
                         ? authorResolver.getUser(username) 
-                        : authorResolver.getPhantomUserBuilder()
-                                        .setUsername(username)
+                        : phantomUserFactory.newUserBuilder(username)
                                         .setEmail(authorIdent.getEmailAddress())
                                         .build();
                 toReturn.add(new GitDataRevision<>(author, commit));

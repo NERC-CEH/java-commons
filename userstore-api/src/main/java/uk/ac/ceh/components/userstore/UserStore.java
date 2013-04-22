@@ -6,7 +6,7 @@ package uk.ac.ceh.components.userstore;
  * ceh.components project
  * @author Christopher Johnson
  */
-public interface UserStore<U extends User, B extends UserBuilder<U>> {
+public interface UserStore<U extends User> {
     /**
      * The following method will return the user associated with the given username
      * @param username
@@ -33,12 +33,4 @@ public interface UserStore<U extends User, B extends UserBuilder<U>> {
      * @throws InvalidCredentialsException if the username or password are incorrect
      */
     U authenticate(String username, String password) throws InvalidCredentialsException;
-    
-    /**
-     * This method will return a UserBuilder implementation which is capable of
-     * delegating the creation of Users who are not in this UserStore to dependant
-     * components.
-     * @return A UserBuilder which can build Users of type U
-     */
-    B getPhantomUserBuilder();
 }

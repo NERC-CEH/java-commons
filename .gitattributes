@@ -27,12 +27,12 @@ userstore-api/src/main/java/uk/ac/ceh/components/userstore/InvalidCredentialsExc
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UnknownUserException.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/User.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UserBuilder.java -text
+userstore-api/src/main/java/uk/ac/ceh/components/userstore/UserBuilderFactory.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UserStore.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UsernameAlreadyTakenException.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/WritableUserStore.java -text
 userstore-inmemory/pom.xml -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/InMemoryUserStore.java -text
-userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/UnableToConstructUserBuilderException.java -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/UserPassword.java -text
 userstore-token-authentication/pom.xml -text
 userstore-token-authentication/src/main/java/uk/ac/ceh/components/tokenauthentication/TokenAuthenticator.java -text

@@ -5,7 +5,7 @@ package uk.ac.ceh.components.userstore;
  * removed
  * @author Christopher Johnson
  */
-public interface WritableUserStore<U extends User, B extends UserBuilder<U>> extends UserStore<U, B> {
+public interface WritableUserStore<U extends User> extends UserStore<U> {
     /**
      * The following method will add a user to the UserStore.
      * @param user User to add

@@ -8,6 +8,5 @@ import uk.ac.ceh.components.userstore.UserBuilder;
  * @author Christopher Johnson
  */
 public interface GitAuthorBuilder<A extends DataAuthor> extends UserBuilder<A> {
-    GitAuthorBuilder<A> setUsername(String username);
     GitAuthorBuilder<A> setEmail(String email);
 }

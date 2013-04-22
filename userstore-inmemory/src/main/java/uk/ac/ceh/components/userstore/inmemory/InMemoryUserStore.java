@@ -10,13 +10,11 @@ import uk.ac.ceh.components.userstore.*;
  * This implementation is thread safe
  * @author cjohn
  */
-public class InMemoryUserStore<U extends User, B extends UserBuilder<U>> implements WritableUserStore<U,B> {
+public class InMemoryUserStore<U extends User> implements WritableUserStore<U> {
     private final Map<String, UserPassword<U>> userStore;
-    private final Class<B> builderClass;
     
-    public InMemoryUserStore(Class<B> builderClass) {
+    public InMemoryUserStore() {
         this.userStore = new HashMap<>();
-        this.builderClass = builderClass;
     }
     
     @Override
@@ -69,15 +67,6 @@ public class InMemoryUserStore<U extends User, B extends UserBuilder<U>> impleme
     }
 
     @Override
-    public B getPhantomUserBuilder() {
-        try {
-            return builderClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new UnableToConstructUserBuilderException("The userbuilder could not be instantiated", ex);
-        }
-    }
-
-    @Override
     public synchronized void setUserPassword(String username, String newPassword) throws UnknownUserException {
         UserPassword<U> userWrapper = userStore.get(username);
         if(userWrapper != null) {
@@ -85,5 +74,4 @@ public class InMemoryUserStore<U extends User, B extends UserBuilder<U>> impleme
         }
         throw new UnknownUserException("The given user is not known");
     }
-
 }
