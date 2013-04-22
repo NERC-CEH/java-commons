@@ -16,10 +16,10 @@ import uk.ac.ceh.components.userstore.UserStore;
  * @author cjohn
  */
 public class UserStoreTokenAuthenticator<U extends User> implements TokenAuthenticator<U> {
-    private final UserStore<U, ?> users;
+    private final UserStore<U> users;
     private final TokenGenerator tokenGen;
 
-    public UserStoreTokenAuthenticator(UserStore<U, ?> users, TokenGenerator tokenGen) {
+    public UserStoreTokenAuthenticator(UserStore<U> users, TokenGenerator tokenGen) {
         this.users = users;
         this.tokenGen = tokenGen;
     }
