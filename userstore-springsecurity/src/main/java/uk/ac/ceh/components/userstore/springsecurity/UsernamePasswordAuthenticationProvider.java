@@ -1,5 +1,7 @@
 package uk.ac.ceh.components.userstore.springsecurity;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import java.util.Arrays;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,7 @@ import uk.ac.ceh.components.userstore.UserStore;
  *
  * @author Rod Scott
  */
-public class UsernamePasswordAuthenticationProvider<U extends User> implements AuthenticationProvider {
+public class UsernamePasswordAuthenticationProvider<U extends User & Roled> implements AuthenticationProvider {
     private final UserStore<U> userStore;
 
     @Autowired 
@@ -37,8 +39,9 @@ public class UsernamePasswordAuthenticationProvider<U extends User> implements A
         
         if(credentials instanceof String) {
             try {
-                U authenticate = userStore.authenticate(username, (String)credentials);
-                return new UsernamePasswordAuthenticationToken(authenticate, null, Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));            
+                U user = userStore.authenticate(username, (String)credentials);
+                return new UsernamePasswordAuthenticationToken(user, null, 
+                        Collections2.transform(user.getRoles(), new TransformRoleToSimpleGrantedAuthority()));            
             } catch (InvalidCredentialsException ex) {
                 throw new BadCredentialsException("Authentication failed", ex);
             }

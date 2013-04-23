@@ -1,5 +1,6 @@
 package uk.ac.ceh.components.userstore.springsecurity;
 
+import com.google.common.collect.Collections2;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import javax.servlet.http.Cookie;
@@ -27,7 +28,7 @@ import uk.ac.ceh.components.userstore.UserStore;
  * rather than the provided token encryption.
  * @author Rod Scott
  */
-public class TokenRememberMeServices<U extends User> implements RememberMeServices, LogoutHandler {
+public class TokenRememberMeServices<U extends User & Roled> implements RememberMeServices, LogoutHandler {
     private final TokenGenerator tokenGenerator;
     private final String key;
     private final UserStore<U> userStore;
@@ -54,7 +55,7 @@ public class TokenRememberMeServices<U extends User> implements RememberMeServic
                 message.get(messageBytes);
                 U user = userStore.getUser(new String(messageBytes));
 
-                return new RememberMeAuthenticationToken(key, user, Arrays.asList(new SimpleGrantedAuthority("ROLE_USER")));
+                return new RememberMeAuthenticationToken(key, user, Collections2.transform(user.getRoles(), new TransformRoleToSimpleGrantedAuthority()));
             }
             catch (InvalidTokenException | ExpiredTokenException | UnknownUserException ex) {
                 cookieGenerator.removeCookie(response); //failed login. Request a cookie delete
