@@ -1,4 +1,3 @@
-
 package uk.ac.ceh.components.userstore.springsecurity;
 
 import java.security.Principal;
@@ -10,7 +9,10 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- *
+ * By registering this ArgumentResolver in your spring configuration, spring mvc 
+ * methods which have an argument annotated with {@link ActiveUser} will be able
+ * to obtain the application domain Principle Object if the other classes in this
+ * package are registered in spring security.
  * @author cjohn
  */
 public class ActiveUserHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {  
@@ -24,5 +26,4 @@ public class ActiveUserHandlerMethodArgumentResolver implements HandlerMethodArg
         Principal principal = webRequest.getUserPrincipal();
         return ((Authentication) principal).getPrincipal();
     }
-
 }

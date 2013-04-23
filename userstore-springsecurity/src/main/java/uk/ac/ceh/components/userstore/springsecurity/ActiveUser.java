@@ -1,4 +1,3 @@
-
 package uk.ac.ceh.components.userstore.springsecurity;
 
 import java.lang.annotation.*;
