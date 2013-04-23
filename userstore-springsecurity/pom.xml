@@ -1,0 +1,64 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>uk.ac.ceh.components</groupId>
+        <artifactId>components-parent</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>userstore-springsecurity</artifactId>
+
+    <name>${project.artifactId}-${project.version}</name>
+    
+    <properties>
+        <org.springframework.security-version>3.1.3.RELEASE</org.springframework.security-version>
+    </properties>
+
+    <dependencies>
+        <!-- CEH Component dependencies -->
+        <dependency>
+            <groupId>uk.ac.ceh.components</groupId>
+            <artifactId>token-generation-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.ac.ceh.components</groupId>
+            <artifactId>userstore-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${org.springframework.security-version}</version>
+        </dependency> 
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${org.springframework.security-version}</version>
+        </dependency> 
+        
+        <!-- Apache commons -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.7</version>
+        </dependency>
+        
+        <!-- Servlet dependecies -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-servlet-api</artifactId>
+            <version>7.0.32</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
