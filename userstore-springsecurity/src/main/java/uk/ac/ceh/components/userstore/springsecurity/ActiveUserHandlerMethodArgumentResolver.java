@@ -3,6 +3,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 import java.security.Principal;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.support.WebArgumentResolver;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -23,7 +24,12 @@ public class ActiveUserHandlerMethodArgumentResolver implements HandlerMethodArg
 
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer mavc, NativeWebRequest webRequest, WebDataBinderFactory wdbf) throws Exception {
-        Principal principal = webRequest.getUserPrincipal();
-        return ((Authentication) principal).getPrincipal();
+        Principal userPrincipal = webRequest.getUserPrincipal();
+        if(userPrincipal instanceof Authentication) {
+            return ((Authentication) userPrincipal).getPrincipal();
+        }
+        else {
+            return null;
+        }
     }
 }
