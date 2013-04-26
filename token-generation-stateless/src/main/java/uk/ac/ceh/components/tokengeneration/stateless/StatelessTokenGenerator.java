@@ -94,7 +94,6 @@ public class StatelessTokenGenerator implements TokenGenerator {
      *                                  |   the token
      * 
      * @param message A message to be encrypted as a token
-     * @param type The type of token which will be produced
      * @param ttl Time in milliseconds until this token expires
      * @return An Token object with the above byte structure encrypted in 
      *  @see #SECRET_KEY_ALGORITHM
