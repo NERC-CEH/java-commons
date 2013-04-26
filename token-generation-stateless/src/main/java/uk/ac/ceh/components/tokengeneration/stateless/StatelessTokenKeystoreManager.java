@@ -51,7 +51,7 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
         else {
             //Ensure that the parent folder for the key file exists. Only do this once
             File parent = keyFile.getParentFile();
-            if(!parent.exists() && !parent.mkdirs())
+            if(parent != null && !parent.exists() && !parent.mkdirs())
                 throw new RuntimeException("Failed to create parent file");
 
             generateKeys(); //generate keys and save these to the key file
@@ -113,6 +113,7 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
         try (FileOutputStream out = new FileOutputStream(keyFile)) {
             KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
             PasswordProtection passwordProtection = new PasswordProtection(password);
+            ks.load(null, password);
             ks.setEntry(keyAlias, new SecretKeyEntry(key), passwordProtection);
             ks.setEntry(hmacAlias, new SecretKeyEntry(hmac), passwordProtection);
             ks.store(out, password);
