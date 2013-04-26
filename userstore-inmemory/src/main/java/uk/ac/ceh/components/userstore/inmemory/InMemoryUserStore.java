@@ -72,6 +72,8 @@ public class InMemoryUserStore<U extends User> implements WritableUserStore<U> {
         if(userWrapper != null) {
             userWrapper.setPassword(newPassword);
         }
-        throw new UnknownUserException("The given user is not known");
+        else {
+            throw new UnknownUserException("The given user is not known");
+        }
     }
 }

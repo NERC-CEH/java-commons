@@ -47,3 +47,5 @@ userstore-api/src/main/java/uk/ac/ceh/components/userstore/WritableUserStore.jav
 userstore-inmemory/pom.xml -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/InMemoryUserStore.java -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/UserPassword.java -text
+userstore-inmemory/src/test/java/uk/ac/ceh/components/userstore/inmemory/InMemoryTestUser.java -text
+userstore-inmemory/src/test/java/uk/ac/ceh/components/userstore/inmemory/InMemoryUserStoreTest.java -text

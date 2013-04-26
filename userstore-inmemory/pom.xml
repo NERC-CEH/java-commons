@@ -17,5 +17,13 @@
             <artifactId>userstore-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <!-- Testing dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.9</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
