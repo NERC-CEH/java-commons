@@ -22,6 +22,7 @@ token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/st
 token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenKeyContainer.java -text
 token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenKeystoreManager.java -text
 token-generation-stateless/src/main/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenKeystoreManagerException.java -text
+token-generation-stateless/src/test/java/uk/ac/ceh/components/tokengeneration/stateless/StatelessTokenGeneratorTest.java -text
 userstore-api/pom.xml -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/InvalidCredentialsException.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UnknownUserException.java -text

@@ -2,6 +2,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 
 import com.google.common.collect.Collections2;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +36,8 @@ import uk.ac.ceh.components.userstore.UserStore;
  * @author Rod Scott, Christopher Johnson
  */
 public class TokenRememberMeServices<U extends User & Roled> implements RememberMeServices, LogoutHandler {
+    private final static Charset MESSAGE_CHARSET = Charset.forName("UTF-8"); 
+    
     private final TokenGenerator tokenGenerator;
     private final String key;
     private final UserStore<U> userStore;
@@ -71,10 +74,8 @@ public class TokenRememberMeServices<U extends User & Roled> implements Remember
         if(cookie != null) {
             try {
                 Token token = new Token(Base64.decodeBase64(cookie.getValue())); //get token from request
-                ByteBuffer message = tokenGenerator.getMessage(token);
-                byte[] messageBytes = new byte[message.remaining()];
-                message.get(messageBytes);
-                U user = userStore.getUser(new String(messageBytes));
+                byte[] messageBytes = tokenGenerator.getMessage(token);
+                U user = userStore.getUser(new String(messageBytes, MESSAGE_CHARSET));
 
                 return new RememberMeAuthenticationToken(key, user, Collections2.transform(user.getRoles(), new TransformRoleToSimpleGrantedAuthority()));
             }
@@ -98,7 +99,7 @@ public class TokenRememberMeServices<U extends User & Roled> implements Remember
     public void loginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication successfulAuthentication) {
         U user = (U)successfulAuthentication.getPrincipal();
         Token token = tokenGenerator.generateToken(
-                                            ByteBuffer.wrap(user.getUsername().getBytes()),
+                                            user.getUsername().getBytes(MESSAGE_CHARSET),
                                             cookieGenerator.getCookieMaxAge() * 1000);
         
         String tokenBase64 = Base64.encodeBase64URLSafeString(token.getBytes());

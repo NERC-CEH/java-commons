@@ -2,6 +2,7 @@ package uk.ac.ceh.components.tokengeneration.stateless;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStore.Entry;
@@ -79,7 +80,7 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
             this.hmac = KeyGenerator.getInstance(StatelessTokenGenerator.MAC_ALGORITHM).generateKey();
             saveKeys();
         }
-        catch(NoSuchAlgorithmException | KeyStoreException ex) {
+        catch(NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException ex) {
             throw new StatelessTokenKeystoreManagerException(ex);
         }
     }
@@ -108,10 +109,13 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
         }
     }
     
-    private void saveKeys() throws KeyStoreException {
-        KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
-        PasswordProtection passwordProtection = new PasswordProtection(password);
-        ks.setEntry(keyAlias, new SecretKeyEntry(key), passwordProtection);
-        ks.setEntry(hmacAlias, new SecretKeyEntry(hmac), passwordProtection);
+    private void saveKeys() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+        try (FileOutputStream out = new FileOutputStream(keyFile)) {
+            KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
+            PasswordProtection passwordProtection = new PasswordProtection(password);
+            ks.setEntry(keyAlias, new SecretKeyEntry(key), passwordProtection);
+            ks.setEntry(hmacAlias, new SecretKeyEntry(hmac), passwordProtection);
+            ks.store(out, password);
+        }
     }
 }

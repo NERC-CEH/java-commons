@@ -1,31 +1,29 @@
 package uk.ac.ceh.components.tokengeneration;
 
-import java.nio.ByteBuffer;
-
 /**
  * Implementations of the following interface are responsible for generating 
- * Tokens from a ByteBuffer and converting those tokens back into ByteBuffers
+ * Tokens from a byte arrays and converting those tokens back into byte arrays
  * @author Christopher Johnson
  */
 public interface TokenGenerator {
     /**
-     * The following method will transform the given token into a byte buffer.
-     * @param token The token to transform into a byte buffer
-     * @return The bytebuffer which was used to create the given token
+     * The following method will transform the given token into a byte array.
+     * @param token The token to transform into a byte array
+     * @return The byte array which was used to create the given token
      * @throws InvalidTokenException if the token can not be processed by this 
      *  TokenGenerator
      * @throws ExpiredTokenException if the Token which was created from the 
      *  #generateToken method had a ttl specified which has now expired
      */
-    ByteBuffer getMessage(Token token) throws InvalidTokenException, ExpiredTokenException;
+    byte[] getMessage(Token token) throws InvalidTokenException, ExpiredTokenException;
     
     /**
-     * Creates a Token which can be converted back into a ByteBuffer at a later 
+     * Creates a Token which can be converted back into a byte array at a later 
      * time
-     * @param messageBuf The message which is to be wrapped up as a token
+     * @param message The message which is to be wrapped up as a token
      * @param ttl The length of time (in milliseconds) which this token should be
      *  valid for
-     * @return the token representation of the messageBuffer
+     * @return the token representation of the message
      */
-    Token generateToken(ByteBuffer messageBuf, int ttl);
+    Token generateToken(byte[] message, int ttl);
 }

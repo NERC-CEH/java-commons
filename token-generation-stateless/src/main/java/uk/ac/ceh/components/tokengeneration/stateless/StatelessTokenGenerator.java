@@ -43,7 +43,7 @@ public class StatelessTokenGenerator implements TokenGenerator {
      * @throws ExpiredTokenException If the token is no longer valid
      */
     @Override
-    public ByteBuffer getMessage(Token token) throws InvalidTokenException, ExpiredTokenException {
+    public byte[] getMessage(Token token) throws InvalidTokenException, ExpiredTokenException {
         try {
             Mac mac = Mac.getInstance(MAC_ALGORITHM);
             mac.init(keys.getHMacKey());
@@ -62,7 +62,7 @@ public class StatelessTokenGenerator implements TokenGenerator {
 
                     ByteBuffer payload = ByteBuffer.wrap(decrypt.doFinal(getBytes(message, message.remaining())));
                     if(payload.getLong() >= Calendar.getInstance().getTimeInMillis())  //is ticket still valid
-                        return payload;
+                        return getBytes(payload, payload.remaining());
                     else 
                         throw new ExpiredTokenException("No longer valid");
                 }
@@ -100,9 +100,7 @@ public class StatelessTokenGenerator implements TokenGenerator {
      *  @see #SECRET_KEY_ALGORITHM
      */
     @Override
-    public Token generateToken(ByteBuffer messageBuf, int ttl) {
-        byte[] message = new byte[messageBuf.remaining()];
-        messageBuf.get(message);
+    public Token generateToken(byte[] message, int ttl) {
         try {
             Cipher encrypt = Cipher.getInstance(CRYPTO_ALGORITHM);
             encrypt.init(Cipher.ENCRYPT_MODE, keys.getKey());
