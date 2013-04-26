@@ -15,6 +15,13 @@ datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitDataRepository
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUser.java -text
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUserBuilderFactory.java -text
 /pom.xml -text
+springsecurity-userstore/pom.xml -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUser.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUserHandlerMethodArgumentResolver.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/Roled.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TokenRememberMeServices.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TransformRoleToSimpleGrantedAuthority.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/UsernamePasswordAuthenticationProvider.java -text
 token-generation-api/pom.xml -text
 token-generation-api/src/main/java/uk/ac/ceh/components/tokengeneration/ExpiredTokenException.java -text
 token-generation-api/src/main/java/uk/ac/ceh/components/tokengeneration/InvalidTokenException.java -text
@@ -40,10 +47,3 @@ userstore-api/src/main/java/uk/ac/ceh/components/userstore/WritableUserStore.jav
 userstore-inmemory/pom.xml -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/InMemoryUserStore.java -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/UserPassword.java -text
-userstore-springsecurity/pom.xml -text
-userstore-springsecurity/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUser.java -text
-userstore-springsecurity/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUserHandlerMethodArgumentResolver.java -text
-userstore-springsecurity/src/main/java/uk/ac/ceh/components/userstore/springsecurity/Roled.java -text
-userstore-springsecurity/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TokenRememberMeServices.java -text
-userstore-springsecurity/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TransformRoleToSimpleGrantedAuthority.java -text
-userstore-springsecurity/src/main/java/uk/ac/ceh/components/userstore/springsecurity/UsernamePasswordAuthenticationProvider.java -text

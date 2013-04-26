@@ -1,10 +1,10 @@
 /build-number.txt
 datastore-api/target
 datastore-git/target
+springsecurity-userstore/target
 /target
 token-generation-api/target
 /token-generation-stateless
 token-generation-stateless/target
 userstore-api/target
 userstore-inmemory/target
-userstore-springsecurity/target
