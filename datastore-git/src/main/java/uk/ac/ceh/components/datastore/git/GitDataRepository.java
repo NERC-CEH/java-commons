@@ -74,6 +74,10 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             .readEnvironment() // scan environment GIT_* variables
             .findGitDir() // scan up the file system tree
             .build();
+        
+        if(!repository.getDirectory().exists()) { //If the repository does not already exist
+            repository.create();                  //Create it
+        }
     }
     
     @Override public InputStream getData(String name) throws DataRepositoryException {
@@ -150,6 +154,15 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         } 
     }
     
+    /**
+     * The following method will return a list of revisions for a given filename.
+     * The revisions will be ordered in the list so that the first element is the
+     * most modern revision of the file and the last the the initial revision of 
+     * the file.
+     * @param name of file to get history for
+     * @return A list of revisions ordered as specified above.
+     * @throws DataRepositoryException 
+     */
     @Override public List<DataRevision<A>> getRevisions(String name) throws DataRepositoryException {
         try {
             List<DataRevision<A>> toReturn = new ArrayList<>();
