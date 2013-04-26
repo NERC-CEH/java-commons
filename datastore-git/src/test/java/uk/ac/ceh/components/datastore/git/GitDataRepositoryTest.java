@@ -58,11 +58,8 @@ public class GitDataRepositoryTest {
         GitTestUser testUser = userStore.getUser("testuser");
         byte[] fileBytes = "file".getBytes();
         
-        Map<String, InputStream> data = new HashMap<>();
-        data.put(filename, new ByteArrayInputStream(fileBytes));
-        
         //When
-        dataStore.submitData(testUser, "This is a test message", data);
+        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
         
         //Then
         byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
@@ -77,13 +74,10 @@ public class GitDataRepositoryTest {
                                             .setEmail("noone@somewhere.com")
                                             .build();
         byte[] fileBytes = "file".getBytes();
-        
-        Map<String, InputStream> data = new HashMap<>();
-        data.put(filename, new ByteArrayInputStream(fileBytes));
-        
+
         //When
-        dataStore.submitData(testUser, "This is a test message", data);
-        
+        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
+                
         //Then
         byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
         assertArrayEquals("Did not get expected file", fileBytes, gitFilebytes);
@@ -96,11 +90,8 @@ public class GitDataRepositoryTest {
         GitTestUser testUser = userStore.getUser("testuser");
         byte[] fileBytes = "file".getBytes();
         
-        Map<String, InputStream> data = new HashMap<>();
-        data.put(filename, new ByteArrayInputStream(fileBytes));
-        
         //When
-        dataStore.submitData(testUser, "This is a test message", data);
+        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
         userStore.deleteUser("testuser"); //delete the original user
         
         //Then
@@ -118,11 +109,8 @@ public class GitDataRepositoryTest {
         GitTestUser testUser = userStore.getUser("testuser");
         byte[] fileBytes = "file".getBytes();
         
-        Map<String, InputStream> data = new HashMap<>();
-        data.put(filename, new ByteArrayInputStream(fileBytes));
-        dataStore.submitData(testUser, "This is a test message", data);
-        
-        //When
+        //When   
+        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
         dataStore.deleteData(testUser, "Deleting file as a test", Arrays.asList(filename));
         
         //Then
@@ -131,6 +119,20 @@ public class GitDataRepositoryTest {
         String revisionId = revisions.get(1).getRevisionID();
         byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename, revisionId));
         assertArrayEquals("Did not get expected file", fileBytes, gitFilebytes);
+    }
+    
+    @Test
+    public void getNotifiedOfIndexEvent() throws DataRepositoryException, UnknownUserException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        DataStoreIndexFileEventSubscriber subscriber = new DataStoreIndexFileEventSubscriber();
+        bus.register(subscriber);
+        
+        //When
+        dataStore.submitData(testUser, "Adding test file", singleFileMap("filename", "data".getBytes()));
+        
+        //Then
+        assertSame("Expected one datastore event", 1, subscriber.events.size());
     }
     
     @After
@@ -142,5 +144,11 @@ public class GitDataRepositoryTest {
         userStore.addUser(new GitTestUser.Builder("testuser")
                 .setEmail("test@user.com")
                 .build(), "");
+    }
+    
+    private static Map<String, InputStream> singleFileMap(String name, byte[] content) {
+        Map<String, InputStream> data = new HashMap<>();
+        data.put(name, new ByteArrayInputStream(content));
+        return data;
     }
 }

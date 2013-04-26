@@ -10,6 +10,7 @@ datastore-git/pom.xml -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitAuthorBuilder.java -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRepository.java -text
 datastore-git/src/main/java/uk/ac/ceh/components/datastore/git/GitDataRevision.java -text
+datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/DataStoreIndexFileEventSubscriber.java -text
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitDataRepositoryTest.java -text
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUser.java -text
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUserBuilderFactory.java -text
