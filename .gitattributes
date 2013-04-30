@@ -14,7 +14,6 @@ datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/DataStoreIndexFil
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitDataRepositoryTest.java -text
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUser.java -text
 datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUserBuilderFactory.java -text
-/delete[!!-~]me.txt -text
 /pom.xml -text
 springsecurity-userstore/pom.xml -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUser.java -text
