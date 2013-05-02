@@ -18,6 +18,7 @@ datastore-git/src/test/java/uk/ac/ceh/components/datastore/git/GitTestUserBuilde
 springsecurity-userstore/pom.xml -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUser.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUserHandlerMethodArgumentResolver.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/AnonymousUserAuthenticationFilter.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/RestAuthenticationEntryPoint.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/Roled.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TokenRememberMeServices.java -text
