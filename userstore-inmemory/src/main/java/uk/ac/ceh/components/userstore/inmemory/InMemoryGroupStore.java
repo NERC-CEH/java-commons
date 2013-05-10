@@ -13,8 +13,10 @@ import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.WritableGroupStore;
 
 /**
- *
- * @author CJOHN
+ * The following class defines a writable groupstore which is based upon a hashmap
+ * 
+ * This implementation is thread safe
+ * @author cjohn
  */
 public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>{
     private Map<String, InMemoryGroup> groups;
@@ -27,8 +29,9 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
     
     @Override
     public List<Group> getGroups(U user) {
-        if(userGroups.containsKey(user)) {
-            return userGroups.get(user);
+        List<Group> givenUsersGroups = userGroups.get(user);
+        if(givenUsersGroups != null) {
+            return givenUsersGroups;
         }
         else {
             return Collections.EMPTY_LIST;
@@ -41,7 +44,7 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
     }
 
     @Override
-    public List<Group> getAllGroups() {
+    public synchronized List<Group> getAllGroups() {
         List<Group> toReturn = new ArrayList<>();
         toReturn.addAll(groups.values());
         return toReturn;
@@ -58,7 +61,7 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
     }
 
     @Override
-    public Group createGroup(String groupname, String description) {
+    public synchronized Group createGroup(String groupname, String description) {
         if(isGroupInExistance(groupname)) {
             throw new IllegalArgumentException("A group already exists with this groupname");
         }
@@ -77,7 +80,7 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
     }
 
     @Override
-    public boolean deleteGroup(String groupname) {
+    public synchronized boolean deleteGroup(String groupname) {
         InMemoryGroup removed = getGroup(groupname);
         for(Entry<User, List<Group>> userGroup : userGroups.entrySet()) {
             userGroup.getValue().remove(removed); //remove group from all users
@@ -87,7 +90,7 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
     }
 
     @Override
-    public void grantGroupToUser(U user, String groupname) {
+    public synchronized void grantGroupToUser(U user, String groupname) {
         InMemoryGroup group = getGroup(groupname);
         if(userGroups.containsKey(user)) {
             userGroups.get(user).add(group);
@@ -98,7 +101,7 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
     }
 
     @Override
-    public boolean revokeGroupFromUser(U user, String groupname) {
+    public synchronized boolean revokeGroupFromUser(U user, String groupname) {
         InMemoryGroup group = getGroup(groupname);
         if(userGroups.containsKey(user)) {
             List<Group> currUserGroups = userGroups.get(user);
