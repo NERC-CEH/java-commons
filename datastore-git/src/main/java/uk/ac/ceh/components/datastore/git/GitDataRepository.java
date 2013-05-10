@@ -30,6 +30,8 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import uk.ac.ceh.components.datastore.*;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
+import uk.ac.ceh.components.userstore.UserAttribute;
+import uk.ac.ceh.components.userstore.UserBuilder;
 import uk.ac.ceh.components.userstore.UserBuilderFactory;
 import uk.ac.ceh.components.userstore.UserStore;
 
@@ -48,7 +50,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     private final UserStore<A> authorResolver;
     private final File root;
     private final EventBus events;
-    private final UserBuilderFactory<? extends GitAuthorBuilder<A>> phantomUserFactory;
+    private final UserBuilderFactory<A> phantomUserFactory;
     
     /**
      * The following is the constructor for the GitDataRepository.
@@ -63,7 +65,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
      * @throws IOException 
      */
     public GitDataRepository(File data, UserStore<A> authorResolver, 
-                                UserBuilderFactory<? extends GitAuthorBuilder<A>> phantomUserFactory, 
+                                UserBuilderFactory<A> phantomUserFactory, 
                                 EventBus events) throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         this.events = events;
@@ -176,7 +178,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                 A author = (authorResolver.userExists(username)) 
                         ? authorResolver.getUser(username) 
                         : phantomUserFactory.newUserBuilder(username)
-                                        .setEmail(authorIdent.getEmailAddress())
+                                        .set(UserAttribute.EMAIL, authorIdent.getEmailAddress())
                                         .build();
                 toReturn.add(new GitDataRevision<>(author, commit));
             }

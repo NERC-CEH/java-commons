@@ -3,19 +3,15 @@ package uk.ac.ceh.components.datastore.git;
 
 import uk.ac.ceh.components.datastore.DataAuthor;
 import uk.ac.ceh.components.userstore.User;
-import uk.ac.ceh.components.userstore.UserBuilder;
+import uk.ac.ceh.components.userstore.UserAttribute;
 
 /**
  *
  * @author cjohn
  */
 public class GitTestUser implements User, DataAuthor{
-    private final String username, email;
-    
-    private GitTestUser(String username, String email) {
-        this.username = username;
-        this.email = email;
-    }
+    private @UserAttribute(UserAttribute.USERNAME) String username;
+    private @UserAttribute(UserAttribute.EMAIL) String email;
     
     @Override
     public String getUsername() {
@@ -27,22 +23,21 @@ public class GitTestUser implements User, DataAuthor{
         return email;
     }
 
-    public static class Builder implements GitAuthorBuilder<GitTestUser> {
-        private String username, email;
+    public static class Builder {
+        private GitTestUser instance;
         
         public Builder(String username) {
-            this.username = username;
+            this.instance = new GitTestUser();
+            instance.username = username;
         }
         
-        @Override
         public Builder setEmail(String email) {
-            this.email = email;
+            instance.email = email;
             return this;
         }
 
-        @Override
         public GitTestUser build() {
-            return new GitTestUser(username, email);
+            return instance;
         }
     }
 }

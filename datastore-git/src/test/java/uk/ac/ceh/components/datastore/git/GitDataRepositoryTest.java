@@ -20,6 +20,7 @@ import uk.ac.ceh.components.userstore.UsernameAlreadyTakenException;
 import uk.ac.ceh.components.userstore.inmemory.InMemoryUserStore;
 import static org.junit.Assert.*;
 import uk.ac.ceh.components.datastore.DataRevision;
+import uk.ac.ceh.components.userstore.AnnotatedUserHelper;
 
 /**
  * The following test will test the GitDataRepository using a InMemoryUserStore
@@ -30,10 +31,10 @@ public class GitDataRepositoryTest {
     private EventBus bus;
     private InMemoryUserStore<GitTestUser> userStore;
     private GitDataRepository<GitTestUser> dataStore;
-    private final GitTestUserBuilderFactory factory;
+    private final AnnotatedUserHelper factory;
     
     public GitDataRepositoryTest() {
-        factory = new GitTestUserBuilderFactory();
+        factory = new AnnotatedUserHelper(GitTestUser.class);
     }
     
     @Before
