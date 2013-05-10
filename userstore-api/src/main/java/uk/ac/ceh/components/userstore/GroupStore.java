@@ -20,9 +20,9 @@ public interface GroupStore<U extends User> {
      * The following method will return the group associated with a given name
      * @param name of the group to find
      * @return The group associated with this name
-     * @throws UnknownGroupException if no group exists with this name
+     * @throws IllegalArgumentException if no group exists with this name
      */
-    Group getGroup(String name) throws UnknownGroupException;
+    Group getGroup(String name) throws IllegalArgumentException;
     
     /**
      * Returns all the groups stored in this GroupManager
@@ -41,7 +41,7 @@ public interface GroupStore<U extends User> {
      * Check to see if the given group can be deleted
      * @param group The name of the group to delete
      * @return true if the group represented by the given name can be deleted
-     * @throws UnknownGroupException if the group does not exist
+     * @throws IllegalArgumentException if the group does not exist
      */
-    boolean isGroupDeletable(String group) throws UnknownGroupException;
+    boolean isGroupDeletable(String group) throws IllegalArgumentException;
 }

@@ -40,9 +40,7 @@ userstore-api/src/main/java/uk/ac/ceh/components/userstore/AnnotatedUserHelper.j
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/FieldSettingUserBuilder.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/Group.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/GroupStore.java -text
-userstore-api/src/main/java/uk/ac/ceh/components/userstore/GroupnameAlreadyTakenException.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/InvalidCredentialsException.java -text
-userstore-api/src/main/java/uk/ac/ceh/components/userstore/UnknownGroupException.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UnknownUserException.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/User.java -text
 userstore-api/src/main/java/uk/ac/ceh/components/userstore/UserAttribute.java -text
@@ -59,6 +57,8 @@ userstore-api/src/test/java/uk/ac/ceh/components/userstore/AnnotatedUserHelperTe
 userstore-api/src/test/java/uk/ac/ceh/components/userstore/BadAnnoatedUserHelperTest.java -text
 userstore-api/src/test/java/uk/ac/ceh/components/userstore/TestAnnotatedUser.java -text
 userstore-inmemory/pom.xml -text
+userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/InMemoryGroup.java -text
+userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/InMemoryGroupStore.java -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/InMemoryUserStore.java -text
 userstore-inmemory/src/main/java/uk/ac/ceh/components/userstore/inmemory/UserPassword.java -text
 userstore-inmemory/src/test/java/uk/ac/ceh/components/userstore/inmemory/InMemoryTestUser.java -text
