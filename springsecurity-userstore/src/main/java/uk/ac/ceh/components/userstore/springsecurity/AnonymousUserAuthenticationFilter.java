@@ -2,6 +2,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 
 import com.google.common.collect.Collections2;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -9,18 +10,17 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 
 /**
  * The following AnonymousAuthenticationFilter will return an AnonymousAuthenticationToken
- * for a set principle.
+ * for a set principle with a given list of Groups
  * 
- * The set principle must be an implementation of {@link Roled}
  * @author Christopher Johnson
  */
 public class AnonymousUserAuthenticationFilter extends AnonymousAuthenticationFilter {
     private final String key;
     
-    public AnonymousUserAuthenticationFilter(String key, Roled principle) {
+    public AnonymousUserAuthenticationFilter(String key, Object principle, String... groups) {
         super(key, principle, new ArrayList(
-                Collections2.transform( principle.getRoles(), 
-                                        new TransformRoleToSimpleGrantedAuthority())));
+                Collections2.transform( Arrays.asList(groups), 
+                                        new TransformGroupnameToSimpleGrantedAuthority())));
         this.key = key;
     }
     

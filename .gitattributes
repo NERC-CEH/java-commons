@@ -18,9 +18,9 @@ springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecu
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/ActiveUserHandlerMethodArgumentResolver.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/AnonymousUserAuthenticationFilter.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/RestAuthenticationEntryPoint.java -text
-springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/Roled.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TokenRememberMeServices.java -text
-springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TransformRoleToSimpleGrantedAuthority.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TransformGroupToSimpleGrantedAuthority.java -text
+springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/TransformGroupnameToSimpleGrantedAuthority.java -text
 springsecurity-userstore/src/main/java/uk/ac/ceh/components/userstore/springsecurity/UsernamePasswordAuthenticationProvider.java -text
 token-generation-api/pom.xml -text
 token-generation-api/src/main/java/uk/ac/ceh/components/tokengeneration/ExpiredTokenException.java -text

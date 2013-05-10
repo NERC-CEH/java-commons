@@ -1,7 +1,6 @@
 package uk.ac.ceh.components.userstore.springsecurity;
 
 import com.google.common.collect.Collections2;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +16,7 @@ import uk.ac.ceh.components.tokengeneration.ExpiredTokenException;
 import uk.ac.ceh.components.tokengeneration.InvalidTokenException;
 import uk.ac.ceh.components.tokengeneration.Token;
 import uk.ac.ceh.components.tokengeneration.TokenGenerator;
+import uk.ac.ceh.components.userstore.GroupStore;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.UserStore;
@@ -35,20 +35,23 @@ import uk.ac.ceh.components.userstore.UserStore;
  * 
  * @author Rod Scott, Christopher Johnson
  */
-public class TokenRememberMeServices<U extends User & Roled> implements RememberMeServices, LogoutHandler {
+public class TokenRememberMeServices<U extends User> implements RememberMeServices, LogoutHandler {
     private final static Charset MESSAGE_CHARSET = Charset.forName("UTF-8"); 
     
     private final TokenGenerator tokenGenerator;
     private final String key;
     private final UserStore<U> userStore;
+    private final GroupStore<U> groupStore;
     private final CookieGenerator cookieGenerator;
-
+    
     public TokenRememberMeServices( String key, 
-                                    UserStore<U> userStore, 
+                                    UserStore<U> userStore,
+                                    GroupStore<U> groupStore,
                                     TokenGenerator tokenGenerator, 
                                     CookieGenerator cookieGenerator) {
         this.tokenGenerator = tokenGenerator;
         this.userStore = userStore;
+        this.groupStore = groupStore;
         this.key = key;
         this.cookieGenerator = cookieGenerator;
     }
@@ -76,8 +79,8 @@ public class TokenRememberMeServices<U extends User & Roled> implements Remember
                 Token token = new Token(Base64.decodeBase64(cookie.getValue())); //get token from request
                 byte[] messageBytes = tokenGenerator.getMessage(token);
                 U user = userStore.getUser(new String(messageBytes, MESSAGE_CHARSET));
-
-                return new RememberMeAuthenticationToken(key, user, Collections2.transform(user.getRoles(), new TransformRoleToSimpleGrantedAuthority()));
+                
+                return new RememberMeAuthenticationToken(key, user, Collections2.transform(groupStore.getGroups(user), new TransformGroupToSimpleGrantedAuthority()));
             }
             catch (InvalidTokenException | ExpiredTokenException | UnknownUserException ex) {
                 cookieGenerator.removeCookie(response); //failed login. Request a cookie delete

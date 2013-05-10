@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import uk.ac.ceh.components.userstore.GroupStore;
 import uk.ac.ceh.components.userstore.InvalidCredentialsException;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.UserStore;
@@ -18,11 +19,13 @@ import uk.ac.ceh.components.userstore.UserStore;
  * 
  * @author Rod Scott, Christopher Johnson
  */
-public class UsernamePasswordAuthenticationProvider<U extends User & Roled> implements AuthenticationProvider {
+public class UsernamePasswordAuthenticationProvider<U extends User> implements AuthenticationProvider {
     private final UserStore<U> userStore;
+    private final GroupStore<U> groupStore;
     
-    public UsernamePasswordAuthenticationProvider(UserStore<U> userStore) {
+    public UsernamePasswordAuthenticationProvider(UserStore<U> userStore, GroupStore<U> groupStore) {
         this.userStore = Objects.requireNonNull(userStore);
+        this.groupStore = Objects.requireNonNull(groupStore);
     }
 
     /**
@@ -49,7 +52,7 @@ public class UsernamePasswordAuthenticationProvider<U extends User & Roled> impl
             try {
                 U user = userStore.authenticate(username, (String)credentials);
                 return new UsernamePasswordAuthenticationToken(user, null, 
-                        Collections2.transform(user.getRoles(), new TransformRoleToSimpleGrantedAuthority()));            
+                        Collections2.transform(groupStore.getGroups(user), new TransformGroupToSimpleGrantedAuthority()));            
             } catch (InvalidCredentialsException ex) {
                 throw new BadCredentialsException("Authentication failed", ex);
             }
