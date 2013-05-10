@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import uk.ac.ceh.components.userstore.Group;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.WritableGroupStore;
@@ -40,7 +39,11 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
 
     @Override
     public InMemoryGroup getGroup(String name) {
-       return Objects.requireNonNull(groups.get(name), "Expected to find a group with name " + name);
+        InMemoryGroup group = groups.get(name);
+        if(group == null) {
+            throw new IllegalArgumentException("Expected to find a group with name " + name);
+        }
+        return group;
     }
 
     @Override
@@ -85,19 +88,26 @@ public class InMemoryGroupStore<U extends User> implements WritableGroupStore<U>
         for(Entry<User, List<Group>> userGroup : userGroups.entrySet()) {
             userGroup.getValue().remove(removed); //remove group from all users
         }
-        
+        groups.remove(groupname);
         return true;
     }
 
     @Override
-    public synchronized void grantGroupToUser(U user, String groupname) {
+    public synchronized boolean grantGroupToUser(U user, String groupname) {
         InMemoryGroup group = getGroup(groupname);
         if(userGroups.containsKey(user)) {
-            userGroups.get(user).add(group);
+            List<Group> currentUsersGroups = userGroups.get(user);
+            if(!currentUsersGroups.contains(group)) {
+                currentUsersGroups.add(group);
+            }
+            else {
+                return false;
+            }
         }
         else {
             userGroups.put(user, new ArrayList<Group>(Arrays.asList(group)));
         }
+        return true;
     }
 
     @Override

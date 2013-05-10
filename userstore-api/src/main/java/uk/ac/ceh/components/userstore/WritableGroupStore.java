@@ -35,12 +35,13 @@ public interface WritableGroupStore<U extends User> extends GroupStore<U> {
     boolean deleteGroup(String groupname) throws IllegalArgumentException;
     
     /**
-     * Assign some user to a group
+     * Assign some user to a group.
      * @param user The user to assign to 
      * @param groupname the group name to associate this user to
+     * @return true if the user did not already have the group
      * @throws IllegalArgumentException if the group does not exist
      */
-    void grantGroupToUser(U user, String groupname) throws IllegalArgumentException;
+    boolean grantGroupToUser(U user, String groupname) throws IllegalArgumentException;
     
     /**
      * Revokes the given group from a user if that user has that group associated 
