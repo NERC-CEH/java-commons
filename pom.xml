@@ -12,6 +12,8 @@
 
     <properties>
         <guava.version>14.0.1</guava.version>
+        <jackson.version>1.9.12</jackson.version>
+        <jersey.version>1.15</jersey.version>
         <spring.version>3.2.2.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -22,6 +24,7 @@
         <module>token-generation-api</module>
         <module>token-generation-stateless</module>
         <module>userstore-api</module>
+        <module>userstore-crowd</module>
         <module>userstore-inmemory</module>
         <module>springsecurity-userstore</module>
     </modules>

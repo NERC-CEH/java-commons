@@ -14,6 +14,10 @@ import java.lang.annotation.Target;
 public @interface UserAttribute {
     public static final String EMAIL = "ceh:user:email";
     public static final String USERNAME = "ceh:user:username";
+    public static final String DISPLAY_NAME = "ceh:user:displayname";
+    public static final String FIRSTNAME = "ceh:user:firstname";
+    public static final String LASTNAME = "ceh:user:lastname";
+
     
     
     String value();

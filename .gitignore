@@ -7,4 +7,5 @@ token-generation-api/target
 /token-generation-stateless
 token-generation-stateless/target
 userstore-api/target
+userstore-crowd/target
 userstore-inmemory/target
