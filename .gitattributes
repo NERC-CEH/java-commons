@@ -59,6 +59,7 @@ userstore-api/src/test/java/uk/ac/ceh/components/userstore/TestAnnotatedUser.jav
 userstore-crowd/pom.xml -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdErrorResponse.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdGroup.java -text
+userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdGroupSearch.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdGroupStore.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdRestException.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdUser.java -text
@@ -66,6 +67,7 @@ userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdUserPass
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdUserSearch.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdUserStore.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/TransformCrowdUserToDomainUser.java -text
+userstore-crowd/src/test/java/uk/ac/ceh/components/userstore/crowd/CrowdGroupStoreTest.java -text
 userstore-crowd/src/test/java/uk/ac/ceh/components/userstore/crowd/CrowdUserStoreTest.java -text
 userstore-crowd/src/test/java/uk/ac/ceh/components/userstore/crowd/TestUser.java -text
 userstore-inmemory/pom.xml -text

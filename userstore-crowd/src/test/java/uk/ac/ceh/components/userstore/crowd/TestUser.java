@@ -12,4 +12,5 @@ import uk.ac.ceh.components.userstore.UserAttribute;
 public class TestUser implements User{
     private @UserAttribute(UserAttribute.USERNAME) String username;
     private @UserAttribute(UserAttribute.EMAIL) String email;
+    
 }

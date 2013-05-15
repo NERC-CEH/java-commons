@@ -1,10 +1,17 @@
 package uk.ac.ceh.components.userstore.crowd;
 
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
+import com.sun.jersey.api.json.JSONConfiguration;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import uk.ac.ceh.components.userstore.Group;
 import uk.ac.ceh.components.userstore.User;
@@ -15,7 +22,16 @@ import uk.ac.ceh.components.userstore.WritableGroupStore;
  * @author Christopher Johnson
  */
 public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
-    WebResource crowd;
+    private WebResource crowd;
+    
+    public CrowdGroupStore(URI crowd, String app, String password) {
+        ClientConfig config = new DefaultClientConfig();
+        config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+        Client client = Client.create(config);
+        client.addFilter(new HTTPBasicAuthFilter(app, password));
+        
+        this.crowd = client.resource(crowd);
+    }
     
     @Override
     public List<Group> getGroups(U user) {
@@ -45,7 +61,16 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
     
     @Override
     public List<Group> getAllGroups() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ClientResponse crowdResponse = crowd.path("search")
+                                            .queryParam("entity-type", "group")
+                                            .queryParam("expand", "group")
+                                            .get(ClientResponse.class);
+        
+        switch(crowdResponse.getClientResponseStatus()) {
+            case OK : return new ArrayList<Group>(crowdResponse.getEntity(CrowdGroupSearch.class)
+                                                                .getGroups());
+            default: throw new CrowdRestException("Unexpected status code: " + crowdResponse.getStatus());
+        }
     }
 
     @Override
