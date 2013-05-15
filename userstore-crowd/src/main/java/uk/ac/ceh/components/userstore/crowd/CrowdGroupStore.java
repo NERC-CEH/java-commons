@@ -13,6 +13,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import javax.ws.rs.core.MediaType;
 import uk.ac.ceh.components.userstore.Group;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.WritableGroupStore;
@@ -39,6 +40,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         
         ClientResponse crowdResponse = crowd.path("user/group/direct")
                                             .queryParam("username", user.getUsername())
+                                            .accept(MediaType.APPLICATION_JSON)
                                             .get(ClientResponse.class);
         
         switch(crowdResponse.getClientResponseStatus()) {
@@ -63,7 +65,8 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
     public List<Group> getAllGroups() {
         ClientResponse crowdResponse = crowd.path("search")
                                             .queryParam("entity-type", "group")
-                                            .queryParam("expand", "group")
+                                            //.queryParam("expand", "group")
+                                            .accept(MediaType.APPLICATION_JSON)
                                             .get(ClientResponse.class);
         
         switch(crowdResponse.getClientResponseStatus()) {
@@ -95,9 +98,10 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         CrowdGroup newGroup = new CrowdGroup(groupname, description);
         
         ClientResponse crowdResponse = crowd.path("group")
+                                            .type(MediaType.APPLICATION_JSON)
                                             .post(ClientResponse.class, newGroup);
         switch(crowdResponse.getClientResponseStatus()) {
-            case OK : return newGroup;
+            case CREATED : return newGroup;
             case BAD_REQUEST : throw new IllegalArgumentException("The specified group already exists");
             case FORBIDDEN:
             default: throw new CrowdRestException("Unexpected status code: " + crowdResponse.getStatus());
@@ -110,6 +114,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         
         ClientResponse crowdResponse = crowd.path("group")
                                             .queryParam("groupname", groupname)
+                                            .type(MediaType.APPLICATION_JSON)
                                             .put(ClientResponse.class, updatedGroup);
         switch(crowdResponse.getClientResponseStatus()) {
             case OK : return updatedGroup;
@@ -125,7 +130,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
                                             .queryParam("groupname", groupname)
                                             .delete(ClientResponse.class);
         switch(crowdResponse.getClientResponseStatus()) {
-            case OK : return true; //successfully deleted
+            case NO_CONTENT : return true; //successfully deleted
             case NOT_FOUND : throw new IllegalArgumentException("The given group does not exist");
             default: throw new CrowdRestException("Unexpected status code: " + crowdResponse.getStatus());
         }
@@ -135,6 +140,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
     public boolean grantGroupToUser(U user, String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = crowd.path("group/user/direct")
                                             .queryParam("groupname", groupname)
+                                            .type(MediaType.APPLICATION_JSON)
                                             .post(ClientResponse.class, user);
         switch(crowdResponse.getClientResponseStatus()) {
             case CREATED : return true;
@@ -160,6 +166,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
     private ClientResponse getCrowdGroupClientResponse(String groupname) {
         return crowd.path("group")
                     .queryParam("groupname", groupname)
+                    .accept(MediaType.APPLICATION_JSON)
                     .get(ClientResponse.class);
     }
 }

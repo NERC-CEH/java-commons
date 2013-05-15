@@ -15,7 +15,7 @@ import org.junit.Ignore;
  *
  * @author Christopher Johnson
  */
-@Ignore
+
 public class CrowdGroupStoreTest {
     private boolean performCleanUp;
     private CrowdGroupStore<User> groupstore;
@@ -55,17 +55,27 @@ public class CrowdGroupStoreTest {
     }
     
     @Test
-    public void createManyGroups() {
+    public void createSecondGroups() {
         //Given
-        //created
+        groupstore.createGroup("testGroup", "group description");
+        
         //When
+        groupstore.createGroup("secondGroup", "new description");
         
         //Then
+        assertEquals("Expected to find two groups", 2, groupstore.getAllGroups().size());
     }
     
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void createExistingGroup() {
+        //Given
+        groupstore.createGroup("testGroup", "group description");
         
+        //When
+        groupstore.createGroup("testGroup", "new description");
+        
+        //Then
+        fail("Didn't expect to be able to create the group with the same name");
     }
     
     @Test
@@ -85,42 +95,99 @@ public class CrowdGroupStoreTest {
     
     @Test
     public void checkGroupWhichDoesNotExistsDoesNotExist() {
+        //Given
+        String groupWhichDoesNotExist = "groupWhichDoesNotExist";
         
+        //When
+        boolean groupInExistance = groupstore.isGroupInExistance(groupWhichDoesNotExist);
+        
+        //Then
+        assertFalse("Didn't expect group to exist", groupInExistance);
     }
     
     @Test
     public void checkGroupWhichDoesExistExists() {
+        //Given
+        groupstore.createGroup("testgroup", "No description");
         
+        //When
+        boolean groupInExistance = groupstore.isGroupInExistance("testgroup");
+        
+        //Then
+        assertTrue("Expected that group exists", groupInExistance);
     }
     
     @Test
     public void isGroupDeleteable() {
+        //Given
+        groupstore.createGroup("testgroup", "No description");
         
+        //When
+        boolean deleteable = groupstore.isGroupDeletable("testgroup");
+        
+        //Then
+        assertTrue("Expected that group should be deletable", deleteable);
     }
     
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void isGroupWhichDoesNotExistDeletable() {
+        //Given
+        String groupnameWhichDoesNotExist = "testgroup";
         
+        //When
+        boolean deleteable = groupstore.isGroupDeletable(groupnameWhichDoesNotExist);
+        
+        //Then
+        fail("Expected to fail with an exception");
     }
     
     @Test
     public void updateGroupWhichExists() {
+        //Given
+        groupstore.createGroup("testgroup", "No description");
         
+        //When
+        groupstore.updateGroup("testgroup", "New Description");
+        Group updatedGroup = groupstore.getGroup("testgroup");
+        
+        //Then
+        assertEquals("Expected to find the updated description", "New Description", updatedGroup.getDescription());
     }
     
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void updateGroupWhichDoesNotExist() {
+        //Given
+        String groupWhichDoesNotExist = "falseGroup";
         
+        //When
+        groupstore.updateGroup(groupWhichDoesNotExist, "New group description");
+        
+        //Then
+        fail("Expected to fail, no group should exist to update");
     }
     
     @Test
     public void deleteGroupWhichExists() {
+        //Given
+        groupstore.createGroup("testgroup", "group description");
         
+        //When
+        boolean deleteGroup = groupstore.deleteGroup("testgroup");
+        
+        //Then
+        assertTrue("Expected that group would be deleted", deleteGroup);
     }
     
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void deleteGroupWhichDoesNotExist() {
+        //Given
+        String groupWhichDoesNotExist = "testgroup";
         
+        //When
+        boolean deleteGroup = groupstore.deleteGroup(groupWhichDoesNotExist);
+        
+        //Then
+        fail("Expected not to be able to delete group");
     }
     
     @Test
