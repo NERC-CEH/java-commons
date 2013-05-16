@@ -58,7 +58,6 @@ userstore-api/src/test/java/uk/ac/ceh/components/userstore/BadAnnoatedUserHelper
 userstore-api/src/test/java/uk/ac/ceh/components/userstore/TestAnnotatedUser.java -text
 userstore-crowd/pom.xml -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdApplicationCredentials.java -text
-userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdGroupSearch.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdGroupStore.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdRestException.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdUserStore.java -text

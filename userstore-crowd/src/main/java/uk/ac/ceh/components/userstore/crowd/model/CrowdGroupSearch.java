@@ -11,5 +11,5 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class CrowdGroupSearch {
-    private List<CrowdGroup> users;
+    private List<CrowdGroup> groups;
 }
