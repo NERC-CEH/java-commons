@@ -4,7 +4,6 @@ import uk.ac.ceh.components.userstore.crowd.model.CrowdGroup;
 import com.sun.jersey.api.client.ClientResponse;
 import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 import static com.sun.jersey.api.client.ClientResponse.Status.OK;
-import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,7 @@ import uk.ac.ceh.components.userstore.Group;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.WritableGroupStore;
 import uk.ac.ceh.components.userstore.crowd.model.CrowdErrorResponse;
+import uk.ac.ceh.components.userstore.crowd.model.CrowdGroupSearch;
 
 /**
  *
@@ -29,6 +29,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
     public List<Group> getGroups(U user) {        
         ClientResponse crowdResponse = crowd.path("user/group/direct")
                                             .queryParam("username", user.getUsername())
+                                            .queryParam("expand", "group")
                                             .accept(MediaType.APPLICATION_JSON)
                                             .get(ClientResponse.class);
         

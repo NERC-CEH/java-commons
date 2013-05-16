@@ -70,6 +70,28 @@ public class CrowdGroupStoreTest {
     }
     
     @Test
+    public void checkUsersGroupsAreFullyPopulated() throws UsernameAlreadyTakenException, InvalidCredentialsException {
+        //Given
+        CrowdUserStore<TestUser> userstore = userStoreResource.userstore();
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        TestUser registeredUser = new TestUser();
+        registeredUser.setUsername("testuser");
+        registeredUser.setFirstname("firstname");
+        registeredUser.setEmail("test@user.com");
+        userstore.addUser(registeredUser, "testpassword");
+        
+        Group populatedGroup = groupstore.createGroup("testgroup", "description which should be returned");
+        groupstore.grantGroupToUser(registeredUser, "testgroup");
+        
+        //When
+        List<Group> usersGroups = groupstore.getGroups(registeredUser);
+        
+        //Then
+        assertTrue("Expected fully populated group to be in usersGroups", usersGroups.contains(populatedGroup));
+    }
+    
+    @Test
     public void checkCreatedGroupIsPopulated() {
         //Given
         CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
