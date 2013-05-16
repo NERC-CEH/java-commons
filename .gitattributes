@@ -63,6 +63,7 @@ userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdRestExce
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/CrowdUserStore.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/TransformCrowdUserToDomainUser.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/TransformDomainUserToCrowdUser.java -text
+userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/model/CrowdAttributes.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/model/CrowdErrorResponse.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/model/CrowdGroup.java -text
 userstore-crowd/src/main/java/uk/ac/ceh/components/userstore/crowd/model/CrowdGroupSearch.java -text
