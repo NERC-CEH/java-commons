@@ -13,4 +13,6 @@ public class TestUser implements User{
     private @UserAttribute(UserAttribute.USERNAME) String username;
     private @UserAttribute(UserAttribute.EMAIL) String email;
     private @UserAttribute(UserAttribute.FIRSTNAME) String firstname;
+    private @UserAttribute(UserAttribute.PHONE_NUMBER) String telephone;
+    
 }

@@ -1,6 +1,5 @@
 package uk.ac.ceh.components.userstore.crowd.model;
 
-import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
 import lombok.Data;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -20,7 +19,6 @@ public class CrowdUser {
     public @XmlElement(name="display-name") String displayname;
     public boolean active = true;
     
-    public Map<String,Object> attributes;
-    
+    public CrowdAttributes attributes;
     public CrowdUserPassword password;
 }
