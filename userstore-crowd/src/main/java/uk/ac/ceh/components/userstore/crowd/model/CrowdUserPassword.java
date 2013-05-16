@@ -1,4 +1,4 @@
-package uk.ac.ceh.components.userstore.crowd;
+package uk.ac.ceh.components.userstore.crowd.model;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

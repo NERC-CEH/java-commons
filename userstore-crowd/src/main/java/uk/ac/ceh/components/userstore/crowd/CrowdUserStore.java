@@ -1,17 +1,15 @@
 package uk.ac.ceh.components.userstore.crowd;
 
+import uk.ac.ceh.components.userstore.crowd.model.CrowdUserSearch;
+import uk.ac.ceh.components.userstore.crowd.model.CrowdUserPassword;
+import uk.ac.ceh.components.userstore.crowd.model.CrowdErrorResponse;
+import uk.ac.ceh.components.userstore.crowd.model.CrowdUser;
 import com.google.common.collect.Collections2;
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import static com.sun.jersey.api.client.ClientResponse.Status.FORBIDDEN;
 import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 import static com.sun.jersey.api.client.ClientResponse.Status.NO_CONTENT;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.api.json.JSONConfiguration;
-import java.net.URI;
 import java.util.Collection;
 import javax.ws.rs.core.MediaType;
 import uk.ac.ceh.components.userstore.InvalidCredentialsException;
@@ -33,15 +31,10 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
     private final TransformCrowdUserToDomainUser<U> userTransformer;
     private final UserAttributeReader<U> reader;
     
-    public CrowdUserStore(URI crowd, String app, String password, 
+    public CrowdUserStore(CrowdApplicationCredentials credentials, 
                                                 UserBuilderFactory<U> userFactory, 
                                                 UserAttributeReader<U> reader) {
-        ClientConfig config = new DefaultClientConfig();
-        config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        Client client = Client.create(config);
-        client.addFilter(new HTTPBasicAuthFilter(app, password));
-        
-        this.crowd = client.resource(crowd);
+        this.crowd = credentials.getCrowdJerseryResource();
         this.reader = reader;
         this.userTransformer = new TransformCrowdUserToDomainUser<>(userFactory);
     }
@@ -55,7 +48,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case OK : return Collections2.transform(crowdResponse
                     .getEntity(CrowdUserSearch.class).getUsers(), userTransformer);
-            default : throw new CrowdRestException("Unexpected status code from crowd");     
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));  
         }
     }
     
@@ -77,7 +70,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case CREATED : return;
             case BAD_REQUEST : throw new UsernameAlreadyTakenException("The given username is already taken");
-            default : throw new CrowdRestException("Unexpected status code from crowd" + crowdResponse.getEntity(String.class)); 
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 
@@ -99,7 +92,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case NO_CONTENT : return;
             case NOT_FOUND : throw new UnknownUserException("Can not update the user as the username is not known");
-            default : throw new CrowdRestException("Unexpected status code from crowd");
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 
@@ -113,7 +106,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
             case NO_CONTENT : return; //success
             case NOT_FOUND : throw new UnknownUserException("The specified user does not exist");
             case FORBIDDEN : throw new CrowdRestException("The crowd application is not allowed to delete users");
-            default : throw new CrowdRestException("Unexpected status code from crowd");
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 
@@ -130,7 +123,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
             case NO_CONTENT : return; //success
             case NOT_FOUND : throw new UnknownUserException("The specified user does not exist");
             case FORBIDDEN : throw new CrowdRestException("The crowd application is not allowed to update users passwords");
-            default : throw new CrowdRestException("Unexpected status code from crowd");
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 
@@ -144,7 +137,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case OK : return userTransformer.apply(crowdResponse.getEntity(CrowdUser.class));
             case NOT_FOUND: throw new UnknownUserException("The given username is not known");
-            default: throw new CrowdRestException("Unexpected status code: " + crowdResponse.getStatus());
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 
@@ -157,7 +150,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case OK : return true;
             case NOT_FOUND : return false;
-            default: throw new CrowdRestException("Unexpected status code: " + crowdResponse.getStatus());
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 
@@ -176,7 +169,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
             case BAD_REQUEST: throw new InvalidCredentialsException(
                                             crowdResponse.getEntity(CrowdErrorResponse.class)
                                                          .getMessage());
-            default: throw new CrowdRestException("Unexpected status code: " + crowdResponse.getStatus());
+            default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
 }

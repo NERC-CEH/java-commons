@@ -1,5 +1,6 @@
 package uk.ac.ceh.components.userstore.crowd;
 
+import uk.ac.ceh.components.userstore.crowd.model.CrowdUser;
 import com.google.common.base.Function;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.UserAttribute;

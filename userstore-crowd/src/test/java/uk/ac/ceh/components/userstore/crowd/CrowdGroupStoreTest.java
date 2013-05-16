@@ -1,15 +1,12 @@
 package uk.ac.ceh.components.userstore.crowd;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import org.junit.After;
-import org.junit.Before;
+import java.util.List;
 import org.junit.Test;
 import uk.ac.ceh.components.userstore.Group;
-import uk.ac.ceh.components.userstore.UnknownUserException;
-import uk.ac.ceh.components.userstore.User;
 import static org.junit.Assert.*;
-import org.junit.Ignore;
+import org.junit.Rule;
+import uk.ac.ceh.components.userstore.InvalidCredentialsException;
+import uk.ac.ceh.components.userstore.UsernameAlreadyTakenException;
 
 /**
  *
@@ -17,31 +14,21 @@ import org.junit.Ignore;
  */
 
 public class CrowdGroupStoreTest {
-    private boolean performCleanUp;
-    private CrowdGroupStore<User> groupstore;
-    
-    @Before
-    public void createCrowdUserStore() throws URISyntaxException {
-        this.groupstore = new CrowdGroupStore<>(
-                new URI("http://crowd.ceh.ac.uk:8095/crowd/rest/usermanagement/latest"), 
+    private CrowdApplicationCredentials crowdCred = new CrowdApplicationCredentials(
+                "http://crowd.ceh.ac.uk:8095/crowd/rest/usermanagement/latest", 
                 "userstore-crowd-test", 
                 "3O6x50h5MAbL");
-        
-        assertTrue("The crowd groupstore should not have any groups in to start with", performCleanUp = groupstore.getAllGroups().isEmpty());
-    }
     
-    @After
-    public void removeSideEffects() throws UnknownUserException {
-        if(performCleanUp) {
-            for(Group currGroup: groupstore.getAllGroups()) {
-                groupstore.deleteGroup(currGroup.getName());
-            }
-        }
-    }
+    @Rule
+    public TestCrowdGroupStoreResource groupStoreResource = new TestCrowdGroupStoreResource(crowdCred);   
+    
+    @Rule
+    public TestCrowdUserStoreResource userStoreResource = new TestCrowdUserStoreResource(crowdCred);
     
     @Test
     public void createGroup() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         String groupname = "newGroup";
         String description = "My New Group";
         
@@ -57,6 +44,7 @@ public class CrowdGroupStoreTest {
     @Test
     public void createSecondGroups() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         groupstore.createGroup("testGroup", "group description");
         
         //When
@@ -69,6 +57,7 @@ public class CrowdGroupStoreTest {
     @Test(expected=IllegalArgumentException.class)
     public void createExistingGroup() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         groupstore.createGroup("testGroup", "group description");
         
         //When
@@ -79,23 +68,77 @@ public class CrowdGroupStoreTest {
     }
     
     @Test
-    public void assignGroupToUser() {
+    public void assignGroupToUser() throws UsernameAlreadyTakenException, InvalidCredentialsException {
+        //Given
+        CrowdUserStore<TestUser> userstore = userStoreResource.userstore();
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         
+        TestUser registeredUser = new TestUser();
+        registeredUser.setUsername("testuser");
+        registeredUser.setFirstname("firstname");
+        registeredUser.setEmail("test@user.com");
+        userstore.addUser(registeredUser, "testpassword");
+        
+        groupstore.createGroup("testgroup", "Test group for testing that user can be added to group");
+        
+        //When
+        groupstore.grantGroupToUser(registeredUser, "testgroup");
+        List<Group> usersGroups = groupstore.getGroups(registeredUser);
+                             
+        //Then
+        assertEquals("Expected one group", 1, usersGroups.size());
+        assertEquals("Expected group to be called testgroup", "testgroup", usersGroups.get(0).getName());
     }
     
     @Test
-    public void removeGroupFromUser() {
+    public void removeGroupFromUser() throws UsernameAlreadyTakenException, InvalidCredentialsException {
+        //Given
+        CrowdUserStore<TestUser> userstore = userStoreResource.userstore();
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         
+        TestUser registeredUser = new TestUser();
+        registeredUser.setUsername("testuser");
+        registeredUser.setFirstname("firstname");
+        registeredUser.setEmail("test@user.com");
+        userstore.addUser(registeredUser, "testpassword");
+        
+        groupstore.createGroup("testgroup", "Test group for testing that user can be added to group");
+        groupstore.grantGroupToUser(registeredUser, "testgroup");
+        
+        //When
+        groupstore.revokeGroupFromUser(registeredUser, "testgroup");
+                             
+        //Then
+        assertEquals("Expected no groups", 0, groupstore.getGroups(registeredUser).size());
     }
     
     @Test
-    public void assignManyGroupsToUser() {
+    public void assignManyGroupsToUser() throws UsernameAlreadyTakenException, InvalidCredentialsException {
+        //Given
+        CrowdUserStore<TestUser> userstore = userStoreResource.userstore();
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         
+        TestUser registeredUser = new TestUser();
+        registeredUser.setUsername("testuser");
+        registeredUser.setFirstname("firstname");
+        registeredUser.setEmail("test@user.com");
+        userstore.addUser(registeredUser, "testpassword");
+        
+        groupstore.createGroup("testgroup", "Test group for testing that user can be added to group");
+        groupstore.createGroup("testgroup2", "Test group for testing that user can be added to group");
+        
+        //When
+        groupstore.grantGroupToUser(registeredUser, "testgroup");
+        groupstore.grantGroupToUser(registeredUser, "testgroup2");
+                             
+        //Then
+        assertEquals("Expected two groups", 2, groupstore.getGroups(registeredUser).size());
     }
     
     @Test
     public void checkGroupWhichDoesNotExistsDoesNotExist() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         String groupWhichDoesNotExist = "groupWhichDoesNotExist";
         
         //When
@@ -108,6 +151,7 @@ public class CrowdGroupStoreTest {
     @Test
     public void checkGroupWhichDoesExistExists() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         groupstore.createGroup("testgroup", "No description");
         
         //When
@@ -120,6 +164,7 @@ public class CrowdGroupStoreTest {
     @Test
     public void isGroupDeleteable() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         groupstore.createGroup("testgroup", "No description");
         
         //When
@@ -132,6 +177,7 @@ public class CrowdGroupStoreTest {
     @Test(expected=IllegalArgumentException.class)
     public void isGroupWhichDoesNotExistDeletable() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         String groupnameWhichDoesNotExist = "testgroup";
         
         //When
@@ -144,6 +190,7 @@ public class CrowdGroupStoreTest {
     @Test
     public void updateGroupWhichExists() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         groupstore.createGroup("testgroup", "No description");
         
         //When
@@ -157,6 +204,7 @@ public class CrowdGroupStoreTest {
     @Test(expected=IllegalArgumentException.class)
     public void updateGroupWhichDoesNotExist() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         String groupWhichDoesNotExist = "falseGroup";
         
         //When
@@ -169,6 +217,7 @@ public class CrowdGroupStoreTest {
     @Test
     public void deleteGroupWhichExists() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         groupstore.createGroup("testgroup", "group description");
         
         //When
@@ -181,6 +230,7 @@ public class CrowdGroupStoreTest {
     @Test(expected=IllegalArgumentException.class)
     public void deleteGroupWhichDoesNotExist() {
         //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         String groupWhichDoesNotExist = "testgroup";
         
         //When
@@ -191,9 +241,24 @@ public class CrowdGroupStoreTest {
     }
     
     @Test
-    public void deleteGroupWhichIsAlreadyInUse() {
+    public void deleteGroupWhichIsAlreadyInUse() throws UsernameAlreadyTakenException, InvalidCredentialsException {
+        //Given
+        CrowdUserStore<TestUser> userstore = userStoreResource.userstore();
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
         
+        TestUser registeredUser = new TestUser();
+        registeredUser.setUsername("testuser");
+        registeredUser.setFirstname("firstname");
+        registeredUser.setEmail("test@user.com");
+        userstore.addUser(registeredUser, "testpassword");
+        
+        groupstore.createGroup("testgroup", "Test group for testing that user can be added to group");
+        groupstore.grantGroupToUser(registeredUser, "testgroup");
+        
+        //When
+        groupstore.deleteGroup("testgroup");
+        
+        //Then
+        assertEquals("Expected no groups", 0, groupstore.getGroups(registeredUser).size());
     }
-    
-    
 }

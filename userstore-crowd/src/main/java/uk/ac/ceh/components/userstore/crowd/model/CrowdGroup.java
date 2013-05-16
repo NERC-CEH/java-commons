@@ -1,4 +1,4 @@
-package uk.ac.ceh.components.userstore.crowd;
+package uk.ac.ceh.components.userstore.crowd.model;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -13,11 +13,16 @@ import uk.ac.ceh.components.userstore.Group;
  * @author Christopher Johnson
  */
 @Data
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class CrowdGroup implements Group {
-    @NonNull private String name, description;
+    @NonNull private String name;
     private boolean active = true;
-    private String type = "GROUP";
+    private String description, type = "GROUP";
+    
+    public CrowdGroup(String name, String description) {
+        this(name);
+        this.description = description;
+    }
 }
