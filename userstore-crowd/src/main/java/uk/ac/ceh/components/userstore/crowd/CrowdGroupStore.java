@@ -15,7 +15,9 @@ import uk.ac.ceh.components.userstore.crowd.model.CrowdErrorResponse;
 import uk.ac.ceh.components.userstore.crowd.model.CrowdGroupSearch;
 
 /**
- *
+ * The following class defines a WritableGroupStore implementation which is 
+ * powered by Atlassian's Crowd Rest API
+ * 
  * @author Christopher Johnson
  */
 public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
