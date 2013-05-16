@@ -23,9 +23,9 @@ public class CrowdGroupStoreTest {
     @Before
     public void createCrowdUserStore() throws URISyntaxException {
         this.groupstore = new CrowdGroupStore<>(
-                new URI("http://localhost:8095/crowd/rest/usermanagement/latest"), 
-                "testapp", 
-                "password");
+                new URI("http://crowd.ceh.ac.uk:8095/crowd/rest/usermanagement/latest"), 
+                "userstore-crowd-test", 
+                "3O6x50h5MAbL");
         
         assertTrue("The crowd groupstore should not have any groups in to start with", performCleanUp = groupstore.getAllGroups().isEmpty());
     }

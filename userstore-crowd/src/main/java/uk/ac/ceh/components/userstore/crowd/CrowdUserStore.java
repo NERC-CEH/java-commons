@@ -77,7 +77,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case CREATED : return;
             case BAD_REQUEST : throw new UsernameAlreadyTakenException("The given username is already taken");
-            default : throw new CrowdRestException("Unexpected status code from crowd"); 
+            default : throw new CrowdRestException("Unexpected status code from crowd" + crowdResponse.getEntity(String.class)); 
         }
     }
 

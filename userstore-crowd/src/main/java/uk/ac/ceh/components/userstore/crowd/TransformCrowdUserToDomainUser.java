@@ -20,6 +20,7 @@ class TransformCrowdUserToDomainUser<U extends User> implements Function<CrowdUs
     public U apply(CrowdUser crowdUser) {
         return factory.newUserBuilder(crowdUser.getName())
                         .set(UserAttribute.EMAIL, crowdUser.getEmail())
+                        .set(UserAttribute.FIRSTNAME, crowdUser.getFirstname())
                         .build();
     }
 }
