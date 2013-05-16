@@ -15,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import uk.ac.ceh.components.userstore.InvalidCredentialsException;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
-import uk.ac.ceh.components.userstore.UserAttribute;
 import uk.ac.ceh.components.userstore.UserAttributeReader;
 import uk.ac.ceh.components.userstore.UserBuilderFactory;
 import uk.ac.ceh.components.userstore.UsernameAlreadyTakenException;
@@ -29,13 +28,13 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
     private WebResource crowd;
     
     private final TransformCrowdUserToDomainUser<U> userTransformer;
-    private final UserAttributeReader<U> reader;
+    private final TransformDomainUserToCrowdUser<U> reader;
     
     public CrowdUserStore(CrowdApplicationCredentials credentials, 
                                                 UserBuilderFactory<U> userFactory, 
                                                 UserAttributeReader<U> reader) {
         this.crowd = credentials.getCrowdJerseryResource();
-        this.reader = reader;
+        this.reader = new TransformDomainUserToCrowdUser<>(reader);
         this.userTransformer = new TransformCrowdUserToDomainUser<>(userFactory);
     }
     
@@ -55,12 +54,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
     @Override
     public void addUser(U user, String password) throws UsernameAlreadyTakenException, InvalidCredentialsException {
         //Build a crowd user from the given user
-        CrowdUser newUser = new CrowdUser();
-        newUser.setName(user.getUsername());
-        newUser.setEmail(reader.get(user, UserAttribute.EMAIL, String.class));
-        newUser.setDisplayname(reader.get(user, UserAttribute.DISPLAY_NAME, String.class));
-        newUser.setFirstname(reader.get(user, UserAttribute.FIRSTNAME, String.class));
-        newUser.setLastname(reader.get(user, UserAttribute.LASTNAME, String.class));
+        CrowdUser newUser = reader.apply(user);
         newUser.setPassword(new CrowdUserPassword(password));
         
         ClientResponse crowdResponse = crowd.path("user")
@@ -77,12 +71,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
     @Override
     public void updateUser(U user) throws UnknownUserException {
         //Build a crowd user from the given user
-        CrowdUser newUser = new CrowdUser();
-        newUser.setName(user.getUsername());
-        newUser.setEmail(reader.get(user, UserAttribute.EMAIL, String.class));
-        newUser.setDisplayname(reader.get(user, UserAttribute.DISPLAY_NAME, String.class));
-        newUser.setFirstname(reader.get(user, UserAttribute.FIRSTNAME, String.class));
-        newUser.setLastname(reader.get(user, UserAttribute.LASTNAME, String.class));
+        CrowdUser newUser = reader.apply(user);
         
         ClientResponse crowdResponse = crowd.path("user")
                                             .queryParam("username", user.getUsername())
