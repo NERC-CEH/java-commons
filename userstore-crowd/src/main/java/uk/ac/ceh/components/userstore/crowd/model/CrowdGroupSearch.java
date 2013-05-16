@@ -1,6 +1,5 @@
-package uk.ac.ceh.components.userstore.crowd;
+package uk.ac.ceh.components.userstore.crowd.model;
 
-import uk.ac.ceh.components.userstore.crowd.model.CrowdGroup;
 import java.util.List;
 import lombok.Data;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -12,5 +11,5 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class CrowdGroupSearch {
-    private List<CrowdGroup> groups;
+    private List<CrowdGroup> users;
 }
