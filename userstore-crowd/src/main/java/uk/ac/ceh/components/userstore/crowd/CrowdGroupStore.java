@@ -54,7 +54,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
     public List<Group> getAllGroups() {
         ClientResponse crowdResponse = crowd.path("search")
                                             .queryParam("entity-type", "group")
-                                            //.queryParam("expand", "group")
+                                            .queryParam("expand", "group")
                                             .accept(MediaType.APPLICATION_JSON)
                                             .get(ClientResponse.class);
         

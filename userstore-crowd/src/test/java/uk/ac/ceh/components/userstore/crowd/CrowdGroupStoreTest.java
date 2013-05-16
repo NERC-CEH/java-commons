@@ -39,6 +39,7 @@ public class CrowdGroupStoreTest {
         Group obtainedGroup = groupstore.getGroup(groupname);
         assertEquals("Expected the created group to be equal to the one obtained", createdGroup, obtainedGroup);
         assertEquals("Expected to find a group with the same name as the one created", groupname, obtainedGroup.getName());
+        assertEquals("Expected to find a group with the same description as the one created", description, obtainedGroup.getDescription());
     }
     
     @Test
@@ -51,7 +52,36 @@ public class CrowdGroupStoreTest {
         groupstore.createGroup("secondGroup", "new description");
         
         //Then
-        assertEquals("Expected to find two groups", 2, groupstore.getAllGroups().size());
+        List<Group> allGroups = groupstore.getAllGroups();
+        assertEquals("Expected to find two groups", 2, allGroups.size());
+    }
+    
+    @Test
+    public void checkAllGroupsAreFullyPopulated() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        //When
+        Group populatedGroup = groupstore.createGroup("testgroup", "description which should be returned");
+        List<Group> allGroups = groupstore.getAllGroups();
+        
+        //Then
+        assertTrue("Expected fully populated group to be in allGroups", allGroups.contains(populatedGroup));
+    }
+    
+    @Test
+    public void checkCreatedGroupIsPopulated() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        String groupname = "testgroup";
+        String description = "description which should be returned";
+        
+        //When
+        Group populatedGroup = groupstore.createGroup(groupname, description);
+        
+        //Then
+        assertEquals("Expected groupname to be set", groupname, populatedGroup.getName());
+        assertEquals("Expected description to be set", description, populatedGroup.getDescription());
     }
     
     @Test(expected=IllegalArgumentException.class)
