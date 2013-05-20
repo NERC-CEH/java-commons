@@ -6,16 +6,15 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
-import java.net.URI;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 /**
  *
  * @author Christopher Johnson
  */
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CrowdApplicationCredentials {
     private final String location, applicationName, password;
     
