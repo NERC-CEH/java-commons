@@ -1,8 +1,10 @@
 package uk.ac.ceh.components.userstore;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * The following class bundles up a UserBuilderFactory and a UserAttributeReader
@@ -71,5 +73,19 @@ public class AnnotatedUserHelper<U extends User> implements UserBuilderFactory<U
         catch(ClassCastException ex) {
             throw new UserAttributeReaderException("Unable to convert to the desired class", ex);
         }
+    }
+
+    @Override
+    public Map<String, Type> getDefinedAttributes() {
+        Map<String, Type> toReturn = new HashMap<>();
+        for(Entry<String, Field> currEntry : namedFields.entrySet()) {
+            toReturn.put(currEntry.getKey(), currEntry.getValue().getGenericType());
+        }
+        return toReturn;
+    }
+
+    @Override
+    public Type getDesiredTypeForURI(String uri) {
+        return getDefinedAttributes().get(uri);
     }
 }

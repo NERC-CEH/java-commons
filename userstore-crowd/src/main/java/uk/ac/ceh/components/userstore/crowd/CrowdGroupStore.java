@@ -95,7 +95,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         switch(crowdResponse.getClientResponseStatus()) {
             case CREATED : return newGroup;
             case BAD_REQUEST : throw new IllegalArgumentException("The specified group already exists");
-            case FORBIDDEN:
+            case FORBIDDEN: throw new CrowdRestException("This group store is not allowed to create groups");
             default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
@@ -110,7 +110,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
                                             .put(ClientResponse.class, updatedGroup);
         switch(crowdResponse.getClientResponseStatus()) {
             case OK : return updatedGroup;
-            case FORBIDDEN: //throw some exception
+            case FORBIDDEN: throw new CrowdRestException("This group store is not allowed to update groups");
             case NOT_FOUND: throw new IllegalArgumentException("The given group does not exist");
             default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }

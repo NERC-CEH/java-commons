@@ -19,6 +19,6 @@ public class CrowdUser {
     public @XmlElement(name="display-name") String displayname;
     public boolean active = true;
     
-    public CrowdAttributes attributes;
+    public CrowdAttributes attributes = new CrowdAttributes();
     public CrowdUserPassword password;
 }

@@ -1,11 +1,22 @@
 package uk.ac.ceh.components.userstore;
 
+import java.lang.reflect.Type;
+import java.util.Map;
+
 /**
  * The following interface defines how to read given user attributes from a user
  * instance.
  * @author Christopher Johnson
  */
 public interface UserAttributeReader<U> {
+    /**
+     * Returns the map of user attribute keys to their defined Types which this 
+     * UserAttributeReader is capable of reading
+     * @return the UserAttribute keys which can be read using this reader mapped to
+     *  the expected type
+     */
+    Map<String, Type> getDefinedAttributes();
+    
     /**
      * Gets the value of the {@link UserAttribute} represented by uri from the 
      *  user
