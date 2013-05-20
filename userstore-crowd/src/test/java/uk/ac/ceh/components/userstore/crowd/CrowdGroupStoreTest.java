@@ -313,4 +313,21 @@ public class CrowdGroupStoreTest {
         //Then
         assertEquals("Expected no groups", 0, groupstore.getGroups(registeredUser).size());
     }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void getGroupsForUserWhoDoesNotExist() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        TestUser userWhoIsNotRegistered = new TestUser();
+        userWhoIsNotRegistered.setUsername("testuser");
+        userWhoIsNotRegistered.setFirstname("firstname");
+        userWhoIsNotRegistered.setEmail("test@user.com");
+        
+        //When
+        groupstore.getGroups(userWhoIsNotRegistered);
+        
+        //Then
+        fail("Expeceted to fail when getting groups");
+        
+    }
 }
