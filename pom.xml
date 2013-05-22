@@ -4,7 +4,7 @@
 	
     <groupId>uk.ac.ceh.components</groupId>
     <artifactId>components-parent</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
 
     <packaging>pom</packaging>
 
@@ -31,7 +31,8 @@
 	
     <scm>
         <connection>scm:git:http://stash.ceh.ac.uk/scm/cehcomponents/code.git</connection>
-    </scm>
+      <tag>components-parent-1.0.3</tag>
+  </scm>
     <build>
         <pluginManagement>
             <plugins>
