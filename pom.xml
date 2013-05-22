@@ -30,7 +30,7 @@
     </modules>
 	
     <scm>
-        <connection>scm:svn:http://svn.ceh.ac.uk/svn/ceh-commons/trunk</connection>
+        <connection>scm:git:http://stash.ceh.ac.uk/scm/cehcomponents/code.git</connection>
     </scm>
     <build>
         <pluginManagement>
