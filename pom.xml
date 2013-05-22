@@ -85,7 +85,6 @@
                 <configuration>
                     <useReleaseProfile>false</useReleaseProfile>
                     <goals>deploy</goals>
-					<username>bamboo</username>
                     <scmCommentPrefix>[Maven Release]-</scmCommentPrefix>
                 </configuration>
             </plugin>
