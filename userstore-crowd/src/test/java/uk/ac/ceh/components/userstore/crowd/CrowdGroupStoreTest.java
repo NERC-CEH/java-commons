@@ -315,6 +315,183 @@ public class CrowdGroupStoreTest {
         assertEquals("Expected no groups", 0, groupstore.getGroups(registeredUser).size());
     }
     
+    @Test
+    public void grantGroupToGroup(){
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        groupstore.createGroup("parentGroup", "Test Parent Group");
+        groupstore.createGroup("childgroup", "Test Child Group");
+        
+        //When
+        groupstore.grantGroupToGroup("childgroup", "parentGroup");
+        List<Group> childGroupsForGroup = groupstore.getChildGroupsForGroup("parentGroup");
+        List<Group> parentGroupsForGroup = groupstore.getParentGroupsForGroup("childgroup");
+        
+        //Then
+        assertEquals("Expected parentGroup to have child", "childgroup", childGroupsForGroup.get(0).getName());
+        assertEquals("Expected childgroup to have parent", "parentGroup", parentGroupsForGroup.get(0).getName());
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void grantGroupToGroupWhichDoesntExist() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        groupstore.createGroup("parentGroup", "Test Parent Group");
+
+        //When
+        groupstore.grantGroupToGroup("fakegroup", "parentGroup");
+        
+        //Then
+        fail("Expected to fail granting group");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void grantGroupWhichDoesntExistToGroup() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        groupstore.createGroup("childGroup", "Test Child Group");
+
+        //When
+        groupstore.grantGroupToGroup("childGroup", "fakegroup");
+        
+        //Then
+        fail("Expected to fail granting group");
+    }
+    
+    @Test
+    public void grantUserToAGroupOfAGroup() throws UsernameAlreadyTakenException, InvalidCredentialsException {
+        //Given
+        CrowdUserStore<TestUser> userstore = userStoreResource.userstore();       
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        groupstore.createGroup("parentGroup", "Test Parent Group");
+        groupstore.createGroup("childGroup", "Test Child Group");
+        groupstore.grantGroupToGroup("childgroup", "parentGroup");
+        
+        TestUser registeredUser = new TestUser();
+        registeredUser.setUsername("testuser");
+        registeredUser.setFirstname("firstname");
+        registeredUser.setEmail("test@user.com");
+        userstore.addUser(registeredUser, "testpassword");
+        
+        //When
+        groupstore.grantGroupToUser(registeredUser, "childgroup");
+        
+        List<Group> groups = groupstore.getGroups(registeredUser);
+        List<Group> directGroups = groupstore.getDirectGroups(registeredUser);
+        
+        //Then
+        assertEquals("Expected to be a member of two groups", 2, groups.size());
+        assertEquals("Expected to be a direct member of one group", 1, directGroups.size());
+    }
+    
+    @Test
+    public void revokeGroupFromGroup() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        groupstore.createGroup("parentGroup", "Test Parent Group");
+        groupstore.createGroup("childGroup", "Test Child Group");
+        groupstore.grantGroupToGroup("childGroup", "parentGroup");
+        
+        //When
+        groupstore.revokeGroupFromGroup("childGroup", "parentGroup");
+        List<Group> childGroupsForGroup = groupstore.getChildGroupsForGroup("parentGroup");
+        List<Group> parentGroupsForGroup = groupstore.getParentGroupsForGroup("childGroup");
+        
+        //Then
+        assertEquals("Expected no groups to be part of the child", 0, childGroupsForGroup.size());
+        assertEquals("Expected no groups to be part of the parent", 0, parentGroupsForGroup.size());
+    }
+    
+    @Test
+    public void checkDirectParentGroupsOfGroup() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        groupstore.createGroup("parentGroup", "Test Parent Group");
+        groupstore.createGroup("childGroup", "Test Child Group");
+        
+        //When
+        groupstore.grantGroupToGroup("childGroup", "parentGroup");
+        List<Group> directParentGroupsForGroup = groupstore.getDirectParentGroupsForGroup("childGroup");
+        
+        //Then
+        assertEquals("Expected childgroup to have parentgroup", "parentGroup", directParentGroupsForGroup.get(0).getName());
+    }
+    
+    @Test
+    public void checkDirectChildGroupsOfGroup() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        groupstore.createGroup("parentGroup", "Test Parent Group");
+        groupstore.createGroup("childGroup", "Test Child Group");
+        
+        //When
+        groupstore.grantGroupToGroup("childGroup", "parentGroup");
+        List<Group> directChildGroupsForGroup = groupstore.getDirectChildGroupsForGroup("parentGroup");
+        
+        //Then
+        assertEquals("Expected parentgroup to have childgroup", "childGroup", directChildGroupsForGroup.get(0).getName());
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    @Ignore("There is an issue with the crowd rest api, it should return a 404 "+
+            "when requesting a group list for a group which does not exist. EOFMF-58")
+    public void getDirectParentGroupsOfGroupThatDoesntExist() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        //When
+        groupstore.getDirectParentGroupsForGroup("fakeGroup");
+        
+        //Then
+        fail("Expected to fail in getting parent groups");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    @Ignore("There is an issue with the crowd rest api, it should return a 404 "+
+            "when requesting a group list for a group which does not exist. EOFMF-58")
+    public void getDirectChildGroupsOfGroupThatDoesntExist() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        //When
+        groupstore.getDirectChildGroupsForGroup("fakeGroup");
+        
+        //Then
+        fail("Expected to fail in getting parent groups");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    @Ignore("There is an issue with the crowd rest api, it should return a 404 "+
+            "when requesting a group list for a group which does not exist. EOFMF-58")
+    public void getChildGroupsOfGroupThatDoesntExist() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        //When
+        groupstore.getChildGroupsForGroup("fakeGroup");
+        
+        //Then
+        fail("Expected to fail in getting parent groups");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    @Ignore("There is an issue with the crowd rest api, it should return a 404 "+
+            "when requesting a group list for a group which does not exist. EOFMF-58")
+    public void getParentGroupsOfGroupThatDoesntExist() {
+        //Given
+        CrowdGroupStore<TestUser> groupstore = groupStoreResource.groupstore();
+        
+        //When
+        groupstore.getParentGroupsForGroup("fakeGroup");
+        
+        //Then
+        fail("Expected to fail in getting parent groups");
+    }
+    
     @Test(expected=IllegalArgumentException.class)
     @Ignore("There is an issue with the crowd rest api, it should return a 404 "+
             "when requesting a group list for a user which does not exist. EOFMF-58")
