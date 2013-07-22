@@ -4,7 +4,7 @@
 	
     <groupId>uk.ac.ceh.components</groupId>
     <artifactId>components-parent</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.8</version>
 
     <packaging>pom</packaging>
 
@@ -31,7 +31,7 @@
 	
     <scm>
         <connection>scm:git:http://stash.ceh.ac.uk/scm/cehcomponents/java-commons.git</connection>
-   <tag>HEAD</tag>
+   <tag>components-parent-1.0.8</tag>
          </scm>
     <build>
         <pluginManagement>
