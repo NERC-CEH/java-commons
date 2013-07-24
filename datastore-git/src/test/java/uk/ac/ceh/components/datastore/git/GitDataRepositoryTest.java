@@ -136,6 +136,48 @@ public class GitDataRepositoryTest {
         assertSame("Expected one datastore event", 1, subscriber.events.size());
     }
     
+    @Test
+    public void commitMultipleTimesAndGetFilesList() throws UnknownUserException, DataRepositoryException, Exception {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test2.file", "data".getBytes()));
+        
+        //When
+        List<String> files = dataStore.getFiles();
+        
+        //Then
+        assertEquals("Expected two files in repository", 2, files.size());
+    }
+    
+    @Test
+    public void getFilesFromPenultimateRevision() throws UnknownUserException, DataRepositoryException, Exception {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test2.file", "data".getBytes()));
+        
+        //When
+        List<String> files = dataStore.getFiles("HEAD~1");
+        
+        //Then
+        assertEquals("Expected one files in repository", 1, files.size());
+    }
+    
+    @Test
+    public void getFilesFromAfterDelete() throws UnknownUserException, DataRepositoryException, Exception {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        dataStore.deleteData(testUser, "This is a test message", Arrays.asList("test1.file"));
+        
+        //When
+        List<String> files = dataStore.getFiles();
+        
+        //Then
+        assertEquals("Expected no files in repository", 0, files.size());
+    }
+        
     @After
     public void deleteRepository() throws IOException {
         FileUtils.deleteDirectory(repository);

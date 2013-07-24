@@ -31,7 +31,6 @@ import uk.ac.ceh.components.datastore.*;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.UserAttribute;
-import uk.ac.ceh.components.userstore.UserBuilder;
 import uk.ac.ceh.components.userstore.UserBuilderFactory;
 import uk.ac.ceh.components.userstore.UserStore;
 
@@ -118,7 +117,6 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                     try (FileChannel outChannel = new FileOutputStream(toCreate).getChannel()) {
                         fastChannelCopy(inChannel, outChannel);
                     }
-                    indexFile(toCreate);
                 }
                 addCommand.addFilepattern(curr.getKey());
             }
@@ -129,10 +127,12 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                                      .setMessage(message)
                                      .setAuthor(author.getUsername(), author.getEmail()).call();
             
+            events.post(new DataSubmittedEvent(toWrite.keySet())); //Perform a data submitted index for the given file
+            
             return new GitDataRevision(author, revision);
         } catch (GitAPIException | IOException ex) {
             throw new DataRepositoryException(ex);
-        } 
+        }
     }
     
     
@@ -149,7 +149,8 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                                         .commit()
                                         .setMessage(message)
                                         .setAuthor(author.getUsername(), author.getEmail()).call();
-
+            
+            events.post(new DataDeletedEvent(toDelete)); //Perform a data deleted index for the given file
             return new GitDataRevision(author, revision);
         } catch (GitAPIException ex) {
             throw new DataRepositoryException(ex);
@@ -190,19 +191,27 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
 
     @Override
-    public void triggerReindex() {
-        events.post(new DropIndexesEvent());
-        indexFile(root);
+    public List<String> getFiles() throws DataRepositoryException {
+        return getFiles(Constants.HEAD);
     }
     
-    private void indexFile(File toIndex) {
-        if(toIndex.isDirectory()) {
-            for(File curr: toIndex.listFiles()) {
-                indexFile(curr);
+    @Override
+    public List<String> getFiles(String revisionStr) throws DataRepositoryException {
+        try {
+            List<String> toReturn = new ArrayList<>();
+            RevWalk revWalk = new RevWalk(repository);
+            RevCommit commit = revWalk.parseCommit(repository.resolve(revisionStr));
+            TreeWalk walk = new TreeWalk(repository);
+            walk.setRecursive(true);
+            walk.addTree(commit.getTree());
+
+            while(walk.next()) {
+                toReturn.add(walk.getPathString());
             }
+            return toReturn;
         }
-        else {
-            events.post(new IndexFileEvent(toIndex));           
+        catch(IOException ex) {
+            throw new DataRepositoryException(ex);
         }
     }
     
