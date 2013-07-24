@@ -127,7 +127,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                                      .setMessage(message)
                                      .setAuthor(author.getUsername(), author.getEmail()).call();
             
-            events.post(new DataSubmittedEvent(toWrite.keySet())); //Perform a data submitted index for the given file
+            events.post(new DataSubmittedEvent(this, toWrite.keySet())); //Perform a data submitted index for the given file
             
             return new GitDataRevision(author, revision);
         } catch (GitAPIException | IOException ex) {
@@ -150,7 +150,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                                         .setMessage(message)
                                         .setAuthor(author.getUsername(), author.getEmail()).call();
             
-            events.post(new DataDeletedEvent(toDelete)); //Perform a data deleted index for the given file
+            events.post(new DataDeletedEvent(this, toDelete)); //Perform a data deleted index for the given file
             return new GitDataRevision(author, revision);
         } catch (GitAPIException ex) {
             throw new DataRepositoryException(ex);
