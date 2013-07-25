@@ -5,7 +5,6 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.api.json.JSONConfiguration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -20,7 +19,6 @@ public class CrowdApplicationCredentials {
     
     WebResource getCrowdJerseryResource() {
         ClientConfig config = new DefaultClientConfig();
-        config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         Client client = Client.create(config);
         client.addFilter(new HTTPBasicAuthFilter(applicationName, password));
         
