@@ -1,9 +1,10 @@
 package uk.ac.ceh.components.userstore.crowd.model;
 
-import javax.xml.bind.annotation.XmlElement;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  *
@@ -11,12 +12,12 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 public class CrowdUser {
     public String name, email;
-    public @XmlElement(name="first-name") String firstname;
-    public @XmlElement(name="last-name") String lastname;
-    public @XmlElement(name="display-name") String displayname;
+    public @JsonProperty("first-name") String firstname;
+    public @JsonProperty("last-name") String lastname;
+    public @JsonProperty("display-name") String displayname;
     public boolean active = true;
     
     public CrowdAttributes attributes = new CrowdAttributes();

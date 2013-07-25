@@ -1,11 +1,11 @@
 package uk.ac.ceh.components.userstore.crowd.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import uk.ac.ceh.components.userstore.Group;
 
 /**

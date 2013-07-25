@@ -1,8 +1,8 @@
 package uk.ac.ceh.components.userstore.crowd.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.Data;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  *
