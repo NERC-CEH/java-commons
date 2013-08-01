@@ -171,7 +171,7 @@ public class GitDataRepositoryTest {
         dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
         
         //When
-        List<String> files = dataStore.getFiles("1762164");
+        List<String> files = dataStore.getFiles("7965702063687269732072756c657320776f6f74");
         
         //Then
         fail("Expected to fail getting the file list");
@@ -184,7 +184,7 @@ public class GitDataRepositoryTest {
         dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
         
         //When
-        InputStream files = dataStore.getData("test1.file", "1762164");
+        InputStream files = dataStore.getData("test1.file", "4920616d20736f207661696e2049206b6e6f772e");
         
         //Then
         fail("Expected to fail getting the file");
