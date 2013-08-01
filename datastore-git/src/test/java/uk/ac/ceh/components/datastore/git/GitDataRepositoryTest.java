@@ -126,7 +126,7 @@ public class GitDataRepositoryTest {
     public void getNotifiedOfIndexEvent() throws DataRepositoryException, UnknownUserException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        DataStoreIndexFileEventSubscriber subscriber = new DataStoreIndexFileEventSubscriber();
+        DataSubmittedEventSubscriber subscriber = new DataSubmittedEventSubscriber();
         bus.register(subscriber);
         
         //When
@@ -162,6 +162,56 @@ public class GitDataRepositoryTest {
         
         //Then
         assertEquals("Expected one files in repository", 1, files.size());
+    }
+    
+    @Test(expected=DataRepositoryException.class)
+    public void getFileListFromNonExistantRevision() throws DataRepositoryException, UnknownUserException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        
+        //When
+        List<String> files = dataStore.getFiles("1762164");
+        
+        //Then
+        fail("Expected to fail getting the file list");
+    }
+    
+    @Test(expected=DataRepositoryException.class)
+    public void getFileFromNonExistantRevision() throws DataRepositoryException, UnknownUserException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        
+        //When
+        InputStream files = dataStore.getData("test1.file", "1762164");
+        
+        //Then
+        fail("Expected to fail getting the file");
+    }
+    
+    @Test(expected=DataRepositoryException.class)
+    public void getFileBeforeAddingAnyData() throws DataRepositoryException {
+        //Given
+        String fileToGet = "dummyfile";
+        
+        //When
+        dataStore.getData(fileToGet);
+        
+        //Then
+        fail("Expected to fail when getting the file");
+    }
+    
+    @Test(expected=DataRepositoryException.class)
+    public void getFileListBeforeAddingAnyData() throws DataRepositoryException {
+        //Given
+        //Nothing
+        
+        //When
+        dataStore.getFiles();
+        
+        //Then
+        fail("Expected to fail when getting the file list");
     }
     
     @Test
