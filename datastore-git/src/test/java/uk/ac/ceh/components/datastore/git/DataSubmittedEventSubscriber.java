@@ -9,7 +9,7 @@ import uk.ac.ceh.components.datastore.DataSubmittedEvent;
  *
  * @author cjohn
  */
-public class DataStoreIndexFileEventSubscriber {
+public class DataSubmittedEventSubscriber {
     final List<DataSubmittedEvent> events = new ArrayList<>();
     
     @Subscribe

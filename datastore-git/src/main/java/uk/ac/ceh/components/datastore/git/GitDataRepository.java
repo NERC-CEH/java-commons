@@ -20,6 +20,7 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -88,20 +89,26 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     @Override public InputStream getData(String name, String revisionStr) throws DataRepositoryException {
         try {
             RevWalk revWalk = new RevWalk(repository);
-            RevCommit commit = revWalk.parseCommit(repository.resolve(revisionStr));
-            
-            TreeWalk treeWalk = TreeWalk.forPath(repository, name, commit.getTree());
-            if(treeWalk != null) {
-                treeWalk.setRecursive(true);
+            ObjectId revision = repository.resolve(revisionStr);
+            if(revision != null) {
+                RevCommit commit = revWalk.parseCommit(revision);
 
-                CanonicalTreeParser canonicalTreeParser = treeWalk.getTree(0, CanonicalTreeParser.class);
+                TreeWalk treeWalk = TreeWalk.forPath(repository, name, commit.getTree());
+                if(treeWalk != null) {
+                    treeWalk.setRecursive(true);
 
-                if(!canonicalTreeParser.eof()) {
-                    return repository.open(canonicalTreeParser.getEntryObjectId()).openStream();
+                    CanonicalTreeParser canonicalTreeParser = treeWalk.getTree(0, CanonicalTreeParser.class);
+
+                    if(!canonicalTreeParser.eof()) {
+                        return repository.open(canonicalTreeParser.getEntryObjectId()).openStream();
+                    }
                 }
+                
+                throw new DataRepositoryException("The file does not exist");
             }
-
-            throw new DataRepositoryException("The file does not exist");
+            else {    
+                throw new DataRepositoryException("The specified revision does not exist");
+            }
         } catch(IOException io) {
             throw new DataRepositoryException(io);
         }
@@ -200,15 +207,21 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         try {
             List<String> toReturn = new ArrayList<>();
             RevWalk revWalk = new RevWalk(repository);
-            RevCommit commit = revWalk.parseCommit(repository.resolve(revisionStr));
-            TreeWalk walk = new TreeWalk(repository);
-            walk.setRecursive(true);
-            walk.addTree(commit.getTree());
+            ObjectId revision = repository.resolve(revisionStr);
+            if(revision != null) {
+                RevCommit commit = revWalk.parseCommit(revision);
+                TreeWalk walk = new TreeWalk(repository);
+                walk.setRecursive(true);
+                walk.addTree(commit.getTree());
 
-            while(walk.next()) {
-                toReturn.add(walk.getPathString());
+                while(walk.next()) {
+                    toReturn.add(walk.getPathString());
+                }
+                return toReturn;
             }
-            return toReturn;
+            else {
+                throw new DataRepositoryException("The specified revision does not exist");
+            }
         }
         catch(IOException ex) {
             throw new DataRepositoryException(ex);
