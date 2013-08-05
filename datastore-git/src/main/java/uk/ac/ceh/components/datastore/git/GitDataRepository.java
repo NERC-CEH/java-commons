@@ -14,11 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -89,7 +92,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     @Override public InputStream getData(String name, String revisionStr) throws DataRepositoryException {
         try {
             RevWalk revWalk = new RevWalk(repository);
-            ObjectId revision = repository.resolve(revisionStr);
+            ObjectId revision = resolveRevision(revisionStr);
             if(revision != null) {
                 RevCommit commit = revWalk.parseCommit(revision);
 
@@ -177,20 +180,26 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         try {
             List<DataRevision<A>> toReturn = new ArrayList<>();
             Git git = new Git(repository);
-            LogCommand logCommand = git.log()
-                    .add(git.getRepository().resolve(Constants.HEAD))
-                    .addPath(name);
-            for(RevCommit commit : logCommand.call()) {
-                PersonIdent authorIdent = commit.getAuthorIdent();
-                String username = authorIdent.getName();
-                A author = (authorResolver.userExists(username)) 
-                        ? authorResolver.getUser(username) 
-                        : phantomUserFactory.newUserBuilder(username)
-                                        .set(UserAttribute.EMAIL, authorIdent.getEmailAddress())
-                                        .build();
-                toReturn.add(new GitDataRevision<>(author, commit));
+            ObjectId revision = resolveRevision(Constants.HEAD);
+            if(revision != null) { //Only perform the git log if the repo has a HEAD
+                LogCommand logCommand = git.log()
+                        .add(revision)
+                        .addPath(name);
+                for(RevCommit commit : logCommand.call()) {
+                    PersonIdent authorIdent = commit.getAuthorIdent();
+                    String username = authorIdent.getName();
+                    A author = (authorResolver.userExists(username)) 
+                            ? authorResolver.getUser(username) 
+                            : phantomUserFactory.newUserBuilder(username)
+                                            .set(UserAttribute.EMAIL, authorIdent.getEmailAddress())
+                                            .build();
+                    toReturn.add(new GitDataRevision<>(author, commit));
+                }
+                return toReturn;
             }
-            return toReturn;
+            else {
+                throw new DataRepositoryException("The repository has no head");
+            }
         }
         catch(IOException | GitAPIException | UnknownUserException ex) {
             throw new DataRepositoryException(ex);
@@ -199,29 +208,49 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
 
     @Override
     public List<String> getFiles() throws DataRepositoryException {
-        return getFiles(Constants.HEAD);
+        ObjectId revision = resolveRevision(Constants.HEAD);
+        if(revision != null) { //If there is no HEAD return an empty list
+            return getFiles(revision);
+        }
+        else {
+            return new ArrayList<>();
+        }
     }
     
     @Override
     public List<String> getFiles(String revisionStr) throws DataRepositoryException {
-        try {
+        ObjectId revision = resolveRevision(revisionStr);
+        if(revision != null) {
+            return getFiles(revision);
+        }
+        else {
+            throw new DataRepositoryException("The specified revision does not exist");
+        }
+    }
+    
+    private List<String> getFiles(ObjectId revision) throws DataRepositoryException {
+       try {
             List<String> toReturn = new ArrayList<>();
             RevWalk revWalk = new RevWalk(repository);
-            ObjectId revision = repository.resolve(revisionStr);
-            if(revision != null) {
-                RevCommit commit = revWalk.parseCommit(revision);
-                TreeWalk walk = new TreeWalk(repository);
-                walk.setRecursive(true);
-                walk.addTree(commit.getTree());
+            RevCommit commit = revWalk.parseCommit(revision);
+            TreeWalk walk = new TreeWalk(repository);
+            walk.setRecursive(true);
+            walk.addTree(commit.getTree());
 
-                while(walk.next()) {
-                    toReturn.add(walk.getPathString());
-                }
-                return toReturn;
+            while(walk.next()) {
+                toReturn.add(walk.getPathString());
             }
-            else {
-                throw new DataRepositoryException("The specified revision does not exist");
-            }
+            return toReturn;
+        }
+        catch(IOException ex) {
+            throw new DataRepositoryException(ex);
+        }
+    }
+    
+    /* Resolve the given git revision but wrap exceptions as DataRepositoryExceptions */
+    private ObjectId resolveRevision(String revisionStr) throws DataRepositoryException {
+        try {
+            return repository.resolve(revisionStr);
         }
         catch(IOException ex) {
             throw new DataRepositoryException(ex);

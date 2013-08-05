@@ -203,15 +203,27 @@ public class GitDataRepositoryTest {
     }
     
     @Test(expected=DataRepositoryException.class)
+    public void getFilesFromHEADOfEmptyRepository() throws DataRepositoryException {
+        //Given
+        String revision = "HEAD";
+        
+        //When
+        List<String> files = dataStore.getFiles(revision);
+        
+        //Then
+        fail("Expected to fail from empty repo as the specified revision did not exists");
+    }
+    
+    @Test
     public void getFileListBeforeAddingAnyData() throws DataRepositoryException {
         //Given
         //Nothing
         
         //When
-        dataStore.getFiles();
+        List<String> files = dataStore.getFiles();
         
         //Then
-        fail("Expected to fail when getting the file list");
+        assertEquals("Expected an empty repository", 0, files.size());
     }
     
     @Test
@@ -228,6 +240,18 @@ public class GitDataRepositoryTest {
         assertEquals("Expected no files in repository", 0, files.size());
     }
         
+    @Test(expected=DataRepositoryException.class)
+    public void getRevisionListForFilesWhenRepoHasNoHead() throws DataRepositoryException {
+        //Given
+        String filename = "dummy.txt";
+        
+        //When
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions(filename);
+        
+        //Then
+        fail("Expected to fail as there is no revision this file could live in");
+    }
+    
     @After
     public void deleteRepository() throws IOException {
         FileUtils.deleteDirectory(repository);
