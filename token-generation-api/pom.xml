@@ -4,7 +4,7 @@
     <parent>
         <groupId>uk.ac.ceh.components</groupId>
         <artifactId>components-parent</artifactId>
-        <version>1.0.15</version>
+        <version>1.0.16-SNAPSHOT</version>
     </parent>
 
     <artifactId>token-generation-api</artifactId>
