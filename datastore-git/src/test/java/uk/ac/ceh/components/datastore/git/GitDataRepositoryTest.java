@@ -252,8 +252,31 @@ public class GitDataRepositoryTest {
         fail("Expected to fail as there is no revision this file could live in");
     }
     
+    @Test
+    public void resetToExternalGitStore() throws Exception {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        File originRepository = new File("originRepo");
+        
+        try {
+            FileUtils.forceMkdir(originRepository);
+            GitDataRepository originDataStore = new GitDataRepository(originRepository, userStore, factory, new EventBus());
+            originDataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+
+            //When
+            dataStore.reset(originRepository.getAbsolutePath(), null);
+
+            //Then
+            assertEquals("Expected one files in repository", 1, dataStore.getFiles().size());
+        }
+        finally {
+            FileUtils.deleteDirectory(originRepository);
+        }
+    }
+    
     @After
     public void deleteRepository() throws IOException {
+        dataStore.close();
         FileUtils.deleteDirectory(repository);
     }
     

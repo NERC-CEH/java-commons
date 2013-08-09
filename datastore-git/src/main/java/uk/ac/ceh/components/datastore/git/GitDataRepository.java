@@ -14,21 +14,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import uk.ac.ceh.components.datastore.*;
@@ -168,6 +171,39 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
     
     /**
+     * The following command will fetch data from the specified remote at the master
+     * branch and then perform a git data reset to the HEAD of the remote master
+     * @param remoteRepo The repository to fetch from
+     * @param credentials The credentials to use, can be null if no credentials are
+     *  required
+     * @throws DataRepositoryException 
+     */
+    public synchronized void reset(String remoteRepo, GitCredentials credentials) throws DataRepositoryException {
+        try {
+            UsernamePasswordCredentialsProvider gitCred = credentials != null
+                                                            ? credentials.getUsernamePasswordCredentialsProvider()
+                                                            : null;
+            
+            FetchResult result = new Git(repository).fetch()
+                                                    .setRemote(remoteRepo)
+                                                    .setRefSpecs(new RefSpec("refs/heads/master"))
+                                                    .setRemoveDeletedRefs(true)
+                                                    .setCredentialsProvider(gitCred)
+                                                    .call();
+            
+            new Git(repository).reset()
+                               .setMode(ResetCommand.ResetType.HARD)
+                               .setRef("FETCH_HEAD")
+                               .call();
+            
+            events.post(new GitDataResetEvent(this, result.getMessages()));
+            
+        } catch(GitAPIException ex) {
+            throw new DataRepositoryException(ex);
+        }
+    }
+    
+    /**
      * The following method will return a list of revisions for a given filename.
      * The revisions will be ordered in the list so that the first element is the
      * most modern revision of the file and the last the the initial revision of 
@@ -226,6 +262,13 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         else {
             throw new DataRepositoryException("The specified revision does not exist");
         }
+    }
+        
+    /**
+     * Method to close the underlying git repository when it is no longer needed
+     */
+    public void close() {
+        repository.close();
     }
     
     private List<String> getFiles(ObjectId revision) throws DataRepositoryException {
