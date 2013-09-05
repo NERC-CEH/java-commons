@@ -1,12 +1,14 @@
 package uk.ac.ceh.components.vocab.sparql;
 
 import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import uk.ac.ceh.components.vocab.Concept;
 import uk.ac.ceh.components.vocab.Vocabulary;
+import uk.ac.ceh.components.vocab.VocabularyException;
 
 /**
  *
@@ -34,11 +36,16 @@ public class SparqlVocabulary implements Vocabulary {
     }
 
     @Override
-    public List<Concept> getAllConcepts() {
-        SparqlResponse sparql = resource.queryParam("query", HARVEST_QUERY)
-                                        .accept("application/sparql-result+xml")
-                                        .get(SparqlResponse.class);
-        return transformResponse(sparql);
+    public List<Concept> getAllConcepts() throws VocabularyException {
+        try {
+            SparqlResponse sparql = resource.queryParam("query", HARVEST_QUERY)
+                                            .accept("application/sparql-result+xml")
+                                            .get(SparqlResponse.class);
+            return transformResponse(sparql);
+        }
+        catch(UniformInterfaceException | ClientHandlerException ex) {
+            throw new VocabularyException("Unable to get concepts for sparql vocab", ex);
+        }
     }
     
     private List<Concept> transformResponse(SparqlResponse sparql) {
