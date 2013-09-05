@@ -1,0 +1,36 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>uk.ac.ceh.components</groupId>
+        <artifactId>components-parent</artifactId>
+        <version>1.0.16-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>vocab-sparql</artifactId>
+
+    <name>${project.artifactId}-${project.version}</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.ac.ceh.components</groupId>
+            <artifactId>vocab-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <!--Lombok-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>0.11.8</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- Jersey Client -->
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+    </dependencies>
+</project>
