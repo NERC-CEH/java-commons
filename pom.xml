@@ -21,8 +21,9 @@
     <modules>
         <module>datastore-api</module>
         <module>datastore-git</module>
-        <module>sparql-api</module>
-        <module>sparql-http</module>
+        <module>vocab-api</module>
+        <module>vocab-sparql</module>
+        <module>vocab-rdf</module>
         <module>token-generation-api</module>
         <module>token-generation-stateless</module>
         <module>userstore-api</module>

@@ -51,7 +51,7 @@ public class SparqlVocabulary implements Vocabulary {
     private List<Concept> transformResponse(SparqlResponse sparql) {
         List<Concept> toReturn = new ArrayList<>();
         for(SparqlResult result : sparql.getResults()) {
-            Concept toAdd = new Concept();
+            SparqlConcept toAdd = new SparqlConcept();
             //Sparql returns a list of binings for each result, we need to flatten 
             //this list to create a single SolrOntologyIndex (uri,term pair)
             //which we can then push into solr

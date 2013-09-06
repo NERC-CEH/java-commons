@@ -1,7 +1,8 @@
-package uk.ac.ceh.components.vocab;
+package uk.ac.ceh.components.vocab.sparql;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import uk.ac.ceh.components.vocab.Concept;
 
 /**
  *
@@ -9,6 +10,6 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain=true)
-public class Concept {
+public class SparqlConcept implements Concept {
     private String term, uri;
 }
