@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/NERC-CEH/java-commons.png?branch=master)](https://travis-ci.org/NERC-CEH/java-commons)
 java-commons
 ============
 
