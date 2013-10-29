@@ -16,9 +16,9 @@ import uk.ac.ceh.components.userstore.UsernameAlreadyTakenException;
 
 public class CrowdGroupStoreTest {
     private CrowdApplicationCredentials crowdCred = new CrowdApplicationCredentials(
-                "http://crowd.ceh.ac.uk:8095/crowd/rest/usermanagement/latest", 
-                "userstore-crowd-test", 
-                "3O6x50h5MAbL");
+                System.getProperty("crowd-url"),
+                System.getProperty("crowd-application"),
+                System.getProperty("crowd-password"));
     
     @Rule
     public TestCrowdGroupStoreResource groupStoreResource = new TestCrowdGroupStoreResource(crowdCred);   
