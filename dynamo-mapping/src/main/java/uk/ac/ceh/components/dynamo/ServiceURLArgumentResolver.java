@@ -4,7 +4,9 @@ import uk.ac.ceh.components.dynamo.annotations.ServiceURL;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -19,8 +21,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  *
  * @author Christopher Johnson
  */
-public class ServiceURArgumentResolver implements HandlerMethodArgumentResolver {
+public class ServiceURLArgumentResolver implements HandlerMethodArgumentResolver {
     private static final String URL_ENCODING = "UTF-8";
+    
+    private final List<QueryParameterResolver> queryParameterResolvers;
+    
+    public ServiceURLArgumentResolver(List<QueryParameterResolver> queryParameterResolvers) {
+        this.queryParameterResolvers = queryParameterResolvers;
+    }
     
     @Override
     public boolean supportsParameter(MethodParameter mp) {
@@ -48,16 +56,24 @@ public class ServiceURArgumentResolver implements HandlerMethodArgumentResolver 
         return toReturn.toString();
     }
     
-    //get all of the method parameters which are annotated with @RequestParam
     private Set<String> getMapServiceApplicableQueryParams(Method method) {
         Set<String> queryParams = new HashSet<>();
-        for(Annotation[] paramAnnotations: method.getParameterAnnotations()) {
-            for(Annotation annot : paramAnnotations) {
-                if(annot instanceof RequestParam) {
-                    queryParams.add(((RequestParam)annot).value());
+        
+        for(MethodParameter methodParameter: getMethodParameters(method)) {
+            for(QueryParameterResolver resolver : queryParameterResolvers) {
+                if(resolver.supports(methodParameter)) {
+                    queryParams.addAll(resolver.getUtilisedQueryParameters(methodParameter));
                 }
             }
         }
         return queryParams;
+    }
+    
+    private List<MethodParameter> getMethodParameters(Method method) {
+        List<MethodParameter> toReturn = new ArrayList<>();
+        for(int i=0; i<method.getParameterTypes().length; i++) {
+            toReturn.add(new MethodParameter(method, i));
+        }
+        return toReturn;
     }
 }
