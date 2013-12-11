@@ -4,7 +4,7 @@
 	
     <groupId>uk.ac.ceh.components</groupId>
     <artifactId>components-parent</artifactId>
-    <version>1.0.19-SNAPSHOT</version>
+    <version>1.0.19</version>
 
     <packaging>pom</packaging>
 
@@ -34,7 +34,7 @@
 	
     <scm>
         <connection>scm:git:https://github.com/NERC-CEH/java-commons.git</connection>
-   <tag>HEAD</tag>
+   <tag>components-parent-1.0.19</tag>
          </scm>
     <build>
         <pluginManagement>
