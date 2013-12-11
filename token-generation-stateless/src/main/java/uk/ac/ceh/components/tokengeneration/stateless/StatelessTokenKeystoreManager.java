@@ -46,20 +46,9 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
         this.hmacAlias = hmacAlias;
         this.keyAlias = keyAlias;
         
-        if(keyFile.exists()) {
-            KeystoreLoader keyPair = new KeystoreLoader();
-            
-            if(keyPair.isSetupWithKeys()) {
-                keyPair.loadKeys();
-            }
-        }
-        else {
-            //Ensure that the parent folder for the key file exists. Only do this once
-            File parent = keyFile.getParentFile();
-            if(parent != null && !parent.exists() && !parent.mkdirs())
-                throw new RuntimeException("Failed to create parent file");
-
-            generateKeys(); //generate keys and save these to the key file
+        generateKeys();
+        if(!readStoredKeys()) {
+            saveKeys();
         }
     }
     
@@ -73,63 +62,85 @@ public class StatelessTokenKeystoreManager implements StatelessTokenKeyContainer
         return key;
     }
     
+    
     /**
      * The following method will reset the secrets of this StatelessTokenKeystoreManager with
-     * new ones. A new encryption key and hmac. These will be saved to the
-     * key file for this StatelessTokenKeystoreManager
-     * @throws NoSuchAlgorithmException 
+     * new ones. A new encryption key and hmac. Use the #saveKeys method to save the keys to 
+     * the keystore
+     * @throws StatelessTokenKeystoreManagerException 
      */
     public final void generateKeys() throws StatelessTokenKeystoreManagerException {
         try {
             this.key = KeyGenerator.getInstance(StatelessTokenGenerator.SECRET_KEY_ALGORITHM).generateKey();
             this.hmac = KeyGenerator.getInstance(StatelessTokenGenerator.MAC_ALGORITHM).generateKey();
-            saveKeys();
         }
-        catch(NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException ex) {
+        catch(NoSuchAlgorithmException ex) {
             throw new StatelessTokenKeystoreManagerException(ex);
         }
     }
     
-    private void saveKeys() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+    /**
+     * Save the keys which are currently set on this StatelessTokenKeystoreManager to the 
+     * keystore file
+     * @throws StatelessTokenKeystoreManagerException if it was not possible to save the keystore 
+     */
+    public final void saveKeys() throws StatelessTokenKeystoreManagerException {
+        KeyStore keystore = loadKeyStore();
+        
+        PasswordProtection passwordProtection = new PasswordProtection(password);
         try (FileOutputStream out = new FileOutputStream(keyFile)) {
-            KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
-            PasswordProtection passwordProtection = new PasswordProtection(password);
-            ks.load(null, password);
-            ks.setEntry(keyAlias, new SecretKeyEntry(key), passwordProtection);
-            ks.setEntry(hmacAlias, new SecretKeyEntry(hmac), passwordProtection);
-            ks.store(out, password);
+            keystore.setEntry(keyAlias, new SecretKeyEntry(key), passwordProtection);
+            keystore.setEntry(hmacAlias, new SecretKeyEntry(hmac), passwordProtection);
+            keystore.store(out, password);
+        }
+        catch(KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException ex) {
+            throw new StatelessTokenKeystoreManagerException(ex);
         }
     }
     
-    private class KeystoreLoader {
-        private final Entry hmacEntry, keyEntry;
-        
-        public KeystoreLoader() throws StatelessTokenKeystoreManagerException {
-            try (FileInputStream in = new FileInputStream(keyFile)) {
-                KeyStore ks = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
-                PasswordProtection passwordProtection = new PasswordProtection(password);
-                ks.load(in, password);
-                
-                hmacEntry = ks.getEntry(hmacAlias, passwordProtection);
-                keyEntry = ks.getEntry(keyAlias, passwordProtection);
+    /**
+     * Read the entries from the keystore
+     * @return true if all entries were present and read, false otherwise
+     * @throws StatelessTokenKeystoreManagerException 
+     */
+    public final boolean readStoredKeys() throws StatelessTokenKeystoreManagerException {
+        try {
+            KeyStore keystore = loadKeyStore();
+
+            PasswordProtection passwordProtection = new PasswordProtection(password);
+            Entry hmacEntry = keystore.getEntry(hmacAlias, passwordProtection),
+                    keyEntry = keystore.getEntry(keyAlias, passwordProtection);
+
+            if(hmacEntry != null) {
+                hmac = ((SecretKeyEntry)hmacEntry).getSecretKey();
             }
-            catch(IOException | NoSuchAlgorithmException | CertificateException | UnrecoverableEntryException | KeyStoreException ex) {
-                throw new StatelessTokenKeystoreManagerException(ex);
+
+            if(keyEntry != null) {
+                key = ((SecretKeyEntry)keyEntry).getSecretKey();
             }
+            //return whether or not we succeded in loading the keys from the keystore
+            return keyEntry != null || hmacEntry != null;
         }
-        
-        public boolean isSetupWithKeys() {
-            return hmacEntry != null && keyEntry != null;
+        catch(KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException ex) {
+            throw new StatelessTokenKeystoreManagerException(ex);
         }
-        
-        public void loadKeys() {
-            if(!(hmacEntry instanceof SecretKeyEntry && keyEntry instanceof SecretKeyEntry)) {
-                throw new IllegalArgumentException("Either the key hmac or aes key in the key store is not a secret key.");
+    }
+    
+    private KeyStore loadKeyStore() throws StatelessTokenKeystoreManagerException {
+        try{
+            KeyStore keystore = KeyStore.getInstance(DEFAULT_KEYSTORE_TYPE);
+            if(keyFile.exists()) {
+                try (FileInputStream in = new FileInputStream(keyFile)) {
+                    keystore.load(in, password);
+                }
             }
-            
-            //Load the keys to the manager
-            StatelessTokenKeystoreManager.this.hmac = ((SecretKeyEntry)hmacEntry).getSecretKey();
-            StatelessTokenKeystoreManager.this.key = ((SecretKeyEntry)keyEntry).getSecretKey();
+            else {
+                keystore.load(null, password);
+            }
+            return keystore;
+        }
+        catch(KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+            throw new StatelessTokenKeystoreManagerException(ex);
         }
     }
 }
