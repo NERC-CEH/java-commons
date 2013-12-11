@@ -8,6 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
@@ -78,5 +79,35 @@ public class StatelessTokenKeystoreManagerTest {
         //Then
         assertEquals("Expected to find the same key", manager.getKey(), managerAgain.getKey());
         assertEquals("Expected to find the same key", manager.getHMacKey(), managerAgain.getHMacKey());
+    }
+    
+    @Test
+    public void checkThatWeCanShareTheHMacKey() throws StatelessTokenKeystoreManagerException {
+        //Given
+        File keystoreFile = new File(folder.getRoot(), "newfile");
+        char[] password = "password".toCharArray();
+        StatelessTokenKeystoreManager manager = new StatelessTokenKeystoreManager(keystoreFile, password, "hmac1", "token1");
+        
+        //When
+        StatelessTokenKeystoreManager managerAgain = new StatelessTokenKeystoreManager(keystoreFile, password, "hmac1", "token2");
+        
+        //Then
+        assertEquals("Expected to find the same key", manager.getHMacKey(), managerAgain.getHMacKey());
+        assertThat("Expected the keys to be different", manager.getKey(), is(not(managerAgain.getKey())));
+    }
+    
+    @Test
+    public void checkThatWeCanShareTheTokenKey() throws StatelessTokenKeystoreManagerException {
+        //Given
+        File keystoreFile = new File(folder.getRoot(), "newfile");
+        char[] password = "password".toCharArray();
+        StatelessTokenKeystoreManager manager = new StatelessTokenKeystoreManager(keystoreFile, password, "hmac1", "token1");
+        
+        //When
+        StatelessTokenKeystoreManager managerAgain = new StatelessTokenKeystoreManager(keystoreFile, password, "hmac2", "token1");
+        
+        //Then
+        assertEquals("Expected to find the same key", manager.getKey(), managerAgain.getKey());
+        assertThat("Expected the hmac keys to be different", manager.getHMacKey(), is(not(managerAgain.getHMacKey())));
     }
 }
