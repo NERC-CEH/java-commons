@@ -116,12 +116,12 @@
     <distributionManagement>
         <repository>
             <id>ceh-releases-nexus</id>
-            <url>http://mavenrepo.nerc-lancaster.ac.uk/nexus/content/repositories/releases</url>
+            <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
             <uniqueVersion>true</uniqueVersion>
             <id>ceh-snapshots-nexus</id>
-            <url>http://mavenrepo.nerc-lancaster.ac.uk/nexus/content/repositories/snapshots</url>
+            <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/snapshots</url>
         </snapshotRepository>
   </distributionManagement>
 </project>
