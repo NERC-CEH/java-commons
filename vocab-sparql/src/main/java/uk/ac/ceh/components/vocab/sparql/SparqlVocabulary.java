@@ -1,44 +1,43 @@
 package uk.ac.ceh.components.vocab.sparql;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
-import java.util.ArrayList;
-import java.util.List;
-import uk.ac.ceh.components.vocab.Concept;
-import uk.ac.ceh.components.vocab.Vocabulary;
-import uk.ac.ceh.components.vocab.VocabularyException;
+import com.sun.jersey.api.client.*;
+import java.util.*;
+import uk.ac.ceh.components.vocab.*;
 
-/**
- *
- * @author Christopher Johnson
- */
 public class SparqlVocabulary implements Vocabulary {
-    private static final String HARVEST_QUERY = "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> " +
-                                                "SELECT DISTINCT ?Concept ?prefLabel " +
-                                                "WHERE " +
-                                                "{ ?Concept ?x skos:Concept . " +
-                                                "?Concept skos:prefLabel ?prefLabel}";
-    
-    
+    private static final String HARVEST_QUERY = 
+    "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> SELECT ?concept ?prefLabel WHERE { ?concept a skos:Concept ; skos:prefLabel ?prefLabel . }";
+     
     private final WebResource resource;
     private final String url;
+    private final String name;
+    private final String query;
     
-    public SparqlVocabulary(String url) {
+    public SparqlVocabulary(String url, String name) {
+        this(url, name, HARVEST_QUERY);
+    }
+    
+    public SparqlVocabulary(String url, String name, String query) {
         this.resource = Client.create().resource(url);
         this.url = url;
+        this.name = name;
+        this.query = query;
     }
     
     @Override
     public String getUrl() {
         return url;
     }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
 
     @Override
     public List<Concept> getAllConcepts() throws VocabularyException {
         try {
-            SparqlResponse sparql = resource.queryParam("query", HARVEST_QUERY)
+            SparqlResponse sparql = resource.queryParam("query", query)
                                             .accept("application/sparql-result+xml")
                                             .get(SparqlResponse.class);
             return transformResponse(sparql);

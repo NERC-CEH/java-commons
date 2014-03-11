@@ -8,5 +8,6 @@ import java.util.List;
  */
 public interface Vocabulary {
     public String getUrl();
+    public String getName();
     public List<Concept> getAllConcepts() throws VocabularyException;
 }

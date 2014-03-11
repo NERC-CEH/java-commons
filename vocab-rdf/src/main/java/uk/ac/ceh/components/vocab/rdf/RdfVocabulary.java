@@ -17,14 +17,21 @@ import uk.ac.ceh.components.vocab.VocabularyException;
 public class RdfVocabulary implements Vocabulary {
     private final WebResource resource;
     private final String url;
+    private final String name;
     
-    public RdfVocabulary(String url) {
+    public RdfVocabulary(String url, String name) {
         this.resource = Client.create().resource(url);
         this.url = url;
+        this.name = name;
     }
     
     @Override
     public String getUrl() {
+        return url;
+    }
+    
+    @Override
+    public String getName() {
         return url;
     }
 
@@ -35,7 +42,7 @@ public class RdfVocabulary implements Vocabulary {
             return new ArrayList<Concept>(rdf.getDescriptions());
         }
         catch(UniformInterfaceException | ClientHandlerException ex) {
-            throw new VocabularyException("Unable to get concepts for sparql vocab", ex);
+            throw new VocabularyException("Unable to get concepts for RDF vocab", ex);
         }
     }
 }
