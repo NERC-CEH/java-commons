@@ -23,9 +23,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -51,7 +49,7 @@ import uk.ac.ceh.components.userstore.UserStore;
  * be provided which can create DataAuthors are of type A.
  * @author cjohn
  */
-public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<A> {
+public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<InputStream, A> {
     private final Repository repository;
     private final UserStore<A> authorResolver;
     private final File root;
@@ -140,7 +138,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                                      .setMessage(message)
                                      .setAuthor(author.getUsername(), author.getEmail()).call();
             
-            events.post(new DataSubmittedEvent(this, toWrite.keySet())); //Perform a data submitted index for the given file
+            events.post(new GitDataSubmittedEvent(this, toWrite.keySet())); //Perform a data submitted index for the given file
             
             return new GitDataRevision(author, revision);
         } catch (GitAPIException | IOException ex) {
@@ -163,7 +161,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                                         .setMessage(message)
                                         .setAuthor(author.getUsername(), author.getEmail()).call();
             
-            events.post(new DataDeletedEvent(this, toDelete)); //Perform a data deleted index for the given file
+            events.post(new GitDataDeletedEvent(this, toDelete)); //Perform a data deleted index for the given file
             return new GitDataRevision(author, revision);
         } catch (GitAPIException ex) {
             throw new DataRepositoryException(ex);
