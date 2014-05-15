@@ -20,12 +20,12 @@ public class GitOngoingDataCommitTest {
     @Mock GitDataRepository<GitTestUser> repository;
     @Mock Map<String, DataWriter> toWrite;
     @Mock List<String> toDelete;
-    GitOngoingDataCommit<GitTestUser> ongoingCommit;
+    GitDataOngoingCommit<GitTestUser> ongoingCommit;
     
     @Before
     public void createMocks() {
         MockitoAnnotations.initMocks(this);
-        ongoingCommit = new GitOngoingDataCommit<>(repository, toWrite, toDelete);
+        ongoingCommit = new GitDataOngoingCommit<>(repository, toWrite, toDelete);
     }
     
     @Test
@@ -50,7 +50,7 @@ public class GitOngoingDataCommitTest {
         DataWriter writer = mock(DataWriter.class);
         
         //When
-        GitOngoingDataCommit<GitTestUser> submitData = ongoingCommit.submitData(fileToAdd, writer);
+        GitDataOngoingCommit<GitTestUser> submitData = ongoingCommit.submitData(fileToAdd, writer);
         
         //Then
         verify(toWrite).put(fileToAdd, writer);
@@ -63,7 +63,7 @@ public class GitOngoingDataCommitTest {
         String fileToDelete = "test";
         
         //When
-        GitOngoingDataCommit<GitTestUser> deleteData = ongoingCommit.deleteData(fileToDelete);
+        GitDataOngoingCommit<GitTestUser> deleteData = ongoingCommit.deleteData(fileToDelete);
         
         //Then
         verify(toDelete).add(fileToDelete);

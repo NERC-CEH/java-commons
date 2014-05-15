@@ -10,7 +10,7 @@ import uk.ac.ceh.components.datastore.DataAuthor;
 import uk.ac.ceh.components.datastore.DataRepositoryException;
 import uk.ac.ceh.components.datastore.DataRevision;
 import uk.ac.ceh.components.datastore.DataWriter;
-import uk.ac.ceh.components.datastore.OngoingDataCommit;
+import uk.ac.ceh.components.datastore.DataOngoingCommit;
 import uk.ac.ceh.components.userstore.User;
 
 /**
@@ -19,23 +19,23 @@ import uk.ac.ceh.components.userstore.User;
  */
 @Getter(lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor(access=lombok.AccessLevel.PROTECTED)
-public class GitOngoingDataCommit<A extends DataAuthor & User> implements OngoingDataCommit<A> {
+public class GitDataOngoingCommit<A extends DataAuthor & User> implements DataOngoingCommit<A> {
     private final GitDataRepository<A> repository;
     private Map<String, DataWriter> toWrite;
     private List<String> toDelete;
     
-    GitOngoingDataCommit(GitDataRepository repo) {
+    GitDataOngoingCommit(GitDataRepository repo) {
         this(repo, new HashMap<String, DataWriter>(), new ArrayList<String>());
     }
     
     @Override
-    public GitOngoingDataCommit<A> submitData(String filename, DataWriter writer) {
+    public GitDataOngoingCommit<A> submitData(String filename, DataWriter writer) {
         toWrite.put(filename, writer);
         return this;
     }
 
     @Override
-    public GitOngoingDataCommit<A> deleteData(String filename) {
+    public GitDataOngoingCommit<A> deleteData(String filename) {
         toDelete.add(filename);
         return this;
     }

@@ -207,7 +207,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         }
     }
     
-    protected synchronized DataRevision<A> submit(GitOngoingDataCommit<A> toCommit, A author, String message) throws DataRepositoryException {
+    protected synchronized DataRevision<A> submit(GitDataOngoingCommit<A> toCommit, A author, String message) throws DataRepositoryException {
         try {
             List<Object> eventsList = new ArrayList<>();  //Create a list to store events
             deleteData(eventsList, toCommit.getToDelete());
@@ -292,14 +292,14 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
 
     @Override
-    public GitOngoingDataCommit<A> submitData(String filename, DataWriter writer) {
-        return new GitOngoingDataCommit<A>(this)
+    public GitDataOngoingCommit<A> submitData(String filename, DataWriter writer) {
+        return new GitDataOngoingCommit<A>(this)
                 .submitData(filename, writer);
     }
 
     @Override
-    public GitOngoingDataCommit<A> deleteData(String toDelete) {
-        return new GitOngoingDataCommit<A>(this)
+    public GitDataOngoingCommit<A> deleteData(String toDelete) {
+        return new GitDataOngoingCommit<A>(this)
                 .deleteData(toDelete);
     }
 }
