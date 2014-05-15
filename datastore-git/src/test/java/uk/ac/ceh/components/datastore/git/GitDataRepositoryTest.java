@@ -1,14 +1,12 @@
 package uk.ac.ceh.components.datastore.git;
 
 import com.google.common.eventbus.EventBus;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
+import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -19,17 +17,27 @@ import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.UsernameAlreadyTakenException;
 import uk.ac.ceh.components.userstore.inmemory.InMemoryUserStore;
 import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import uk.ac.ceh.components.datastore.DataRevision;
+import uk.ac.ceh.components.datastore.DataWriter;
 import uk.ac.ceh.components.userstore.AnnotatedUserHelper;
+import static org.mockito.Mockito.*;
+import uk.ac.ceh.components.datastore.DataDeletedEvent;
+import uk.ac.ceh.components.datastore.DataSubmittedEvent;
 
 /**
  * The following test will test the GitDataRepository using a InMemoryUserStore
  * @author cjohn
  */
 public class GitDataRepositoryTest {
-    private File repository;
-    private EventBus bus;
-    private InMemoryUserStore<GitTestUser> userStore;
+    public @Rule TemporaryFolder folder= new TemporaryFolder();
+    private @Mock EventBus bus;
+    private @Spy InMemoryUserStore<GitTestUser> userStore;
     private GitDataRepository<GitTestUser> dataStore;
     private final AnnotatedUserHelper factory;
     
@@ -38,18 +46,16 @@ public class GitDataRepositoryTest {
     }
     
     @Before
-    public void createEmptyRepository() throws IOException, UsernameAlreadyTakenException {
-        //create an EventBus
-        bus = new EventBus();
-        
+    public void createEmptyRepository() throws IOException, UsernameAlreadyTakenException {        
         //create an in memory userstore
         userStore = new InMemoryUserStore<>();
         populateTestUsers();
         
+        //Init mocks
+        MockitoAnnotations.initMocks(this);
+        
         //create a testRepo folder and then a git data repository
-        repository = new File("testRepo");
-        FileUtils.forceMkdir(repository);
-        dataStore = new GitDataRepository(repository, userStore, factory, bus);
+        dataStore = new GitDataRepository(folder.getRoot(), userStore, factory, bus);
     }
     
     @Test
@@ -57,14 +63,15 @@ public class GitDataRepositoryTest {
         //Given
         String filename = "new.file";
         GitTestUser testUser = userStore.getUser("testuser");
-        byte[] fileBytes = "file".getBytes();
+        String file = "file";
         
         //When
-        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
+        dataStore.submitData(filename, new StringDataWriter(file))
+                 .commit(testUser, "This is a test message");
         
         //Then
         byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
-        assertArrayEquals("Did not get expected file", fileBytes, gitFilebytes);
+        assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
     @Test
@@ -74,14 +81,15 @@ public class GitDataRepositoryTest {
         GitTestUser testUser = new GitTestUser.Builder("unknownUser")
                                             .setEmail("noone@somewhere.com")
                                             .build();
-        byte[] fileBytes = "file".getBytes();
+        String file = "file";
 
         //When
-        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
+        dataStore.submitData(filename, new StringDataWriter(file))
+                 .commit(testUser, "This is a test message");
                 
         //Then
         byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
-        assertArrayEquals("Did not get expected file", fileBytes, gitFilebytes);
+        assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
     @Test
@@ -89,10 +97,11 @@ public class GitDataRepositoryTest {
         //Given
         String filename = "new.file";
         GitTestUser testUser = userStore.getUser("testuser");
-        byte[] fileBytes = "file".getBytes();
+        String file = "file";
         
         //When
-        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
+        dataStore.submitData(filename, new StringDataWriter(file))
+                 .commit(testUser, "This is a test message");
         userStore.deleteUser("testuser"); //delete the original user
         
         //Then
@@ -100,7 +109,7 @@ public class GitDataRepositoryTest {
         assertNotSame("The user was deleted so that user should have been recreated as a phantom", 
                 testUser, dataStore.getRevisions(filename).get(0).getAuthor());
         
-        assertArrayEquals("Did not get expected file", fileBytes, gitFilebytes);
+        assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
     @Test
@@ -108,40 +117,95 @@ public class GitDataRepositoryTest {
         //Given
         String filename = "new.file";
         GitTestUser testUser = userStore.getUser("testuser");
-        byte[] fileBytes = "file".getBytes();
+        String file = "file";
         
         //When   
-        dataStore.submitData(testUser, "This is a test message", singleFileMap(filename, fileBytes));
-        dataStore.deleteData(testUser, "Deleting file as a test", Arrays.asList(filename));
+        dataStore.submitData(filename, new StringDataWriter(file))
+                .commit(testUser, "This is a test message");
+        
+        dataStore.deleteData(filename)
+                 .commit(testUser, "Deleting file as a test");
         
         //Then
         List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("new.file");
         assertEquals("Expected revision history of size two (Added and removed)", 2, revisions.size());
         String revisionId = revisions.get(1).getRevisionID();
         byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename, revisionId));
-        assertArrayEquals("Did not get expected file", fileBytes, gitFilebytes);
+        assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
     @Test
     public void getNotifiedOfIndexEvent() throws DataRepositoryException, UnknownUserException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        DataSubmittedEventSubscriber subscriber = new DataSubmittedEventSubscriber();
-        bus.register(subscriber);
         
         //When
-        dataStore.submitData(testUser, "Adding test file", singleFileMap("filename", "data".getBytes()));
+        dataStore.submitData("filename", new StringDataWriter("data"))
+                .commit(testUser, "Adding test file");
         
         //Then
-        assertSame("Expected one datastore event", 1, subscriber.events.size());
+        verify(bus, times(1)).post(isA(DataSubmittedEvent.class));
+    }
+    
+    @Test
+    public void getNotifiedOfResetEvent() throws UnknownUserException, IOException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        File originRepository = new File("originRepo");
+        
+        try {
+            FileUtils.forceMkdir(originRepository);
+            GitDataRepository originDataStore = new GitDataRepository(originRepository, userStore, factory, new EventBus());
+            originDataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+           
+            //When
+            dataStore.reset(originRepository.getAbsolutePath(), null);
+
+            //Then
+            verify(bus, times(1)).post(isA(GitDataResetEvent.class));
+        }
+        finally {
+            FileUtils.deleteDirectory(originRepository);
+        }
+    }
+    
+    @Test
+    public void getNotifiedOfDeleteEvent() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("filename", new StringDataWriter("data"))
+                .commit(testUser, "Adding test file");
+        
+        //When
+        dataStore.deleteData("filename")
+                .commit(testUser, "Deleting file");
+        
+        //Then
+        verify(bus, times(1)).post(isA(DataDeletedEvent.class));
+    }
+    
+    @Test
+    public void multipleDataAddsOnlyYieldOnDataSubmittedEvent() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        
+        //When
+        dataStore.submitData("filename", new StringDataWriter("data"))
+                 .submitData("filename2", new StringDataWriter("data2"))
+                 .commit(testUser, "My Commit");
+        
+        //Then
+        ArgumentCaptor<DataSubmittedEvent> argument = ArgumentCaptor.forClass(DataSubmittedEvent.class);
+        verify(bus, times(1)).post(argument.capture());
+        assertEquals("Expected two files in event", 2, argument.getValue().getFilenames().size());
     }
     
     @Test
     public void commitMultipleTimesAndGetFilesList() throws UnknownUserException, DataRepositoryException, Exception {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test2.file", "data".getBytes()));
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+        dataStore.submitData("test2.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
         List<String> files = dataStore.getFiles();
@@ -154,8 +218,8 @@ public class GitDataRepositoryTest {
     public void getFilesFromPenultimateRevision() throws UnknownUserException, DataRepositoryException, Exception {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test2.file", "data".getBytes()));
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+        dataStore.submitData("test2.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
         List<String> files = dataStore.getFiles("HEAD~1");
@@ -168,7 +232,7 @@ public class GitDataRepositoryTest {
     public void getFileListFromNonExistantRevision() throws DataRepositoryException, UnknownUserException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
         List<String> files = dataStore.getFiles("7965702063687269732072756c657320776f6f74");
@@ -181,7 +245,7 @@ public class GitDataRepositoryTest {
     public void getFileFromNonExistantRevision() throws DataRepositoryException, UnknownUserException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
         InputStream files = dataStore.getData("test1.file", "4920616d20736f207661696e2049206b6e6f772e");
@@ -230,8 +294,8 @@ public class GitDataRepositoryTest {
     public void getFilesFromAfterDelete() throws UnknownUserException, DataRepositoryException, Exception {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
-        dataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
-        dataStore.deleteData(testUser, "This is a test message", Arrays.asList("test1.file"));
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+        dataStore.deleteData("test1.file").commit(testUser, "This is a test message");
         
         //When
         List<String> files = dataStore.getFiles();
@@ -261,8 +325,8 @@ public class GitDataRepositoryTest {
         try {
             FileUtils.forceMkdir(originRepository);
             GitDataRepository originDataStore = new GitDataRepository(originRepository, userStore, factory, new EventBus());
-            originDataStore.submitData(testUser, "This is a test message", singleFileMap("test1.file", "data".getBytes()));
-
+            originDataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+           
             //When
             dataStore.reset(originRepository.getAbsolutePath(), null);
 
@@ -275,9 +339,8 @@ public class GitDataRepositoryTest {
     }
     
     @After
-    public void deleteRepository() throws IOException {
+    public void closeRepository() throws IOException {
         dataStore.close();
-        FileUtils.deleteDirectory(repository);
     }
     
     private void populateTestUsers() throws UsernameAlreadyTakenException {
@@ -286,9 +349,17 @@ public class GitDataRepositoryTest {
                 .build(), "");
     }
     
-    private static Map<String, InputStream> singleFileMap(String name, byte[] content) {
-        Map<String, InputStream> data = new HashMap<>();
-        data.put(name, new ByteArrayInputStream(content));
-        return data;
+    @Data
+    private static class StringDataWriter implements DataWriter {
+        private final String content;
+        
+        @Override
+        public void write(OutputStream out) throws DataRepositoryException {
+            try {
+                out.write(content.getBytes());
+            } catch (IOException ex) {
+                throw new DataRepositoryException(ex);
+            }
+        }
     }
 }

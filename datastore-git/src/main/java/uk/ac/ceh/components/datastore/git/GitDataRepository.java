@@ -5,11 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +44,7 @@ import uk.ac.ceh.components.userstore.UserStore;
  * be provided which can create DataAuthors are of type A.
  * @author cjohn
  */
-public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<InputStream, A> {
+public class GitDataRepository<A extends DataAuthor & User> implements DataRepository<A> {
     private final Repository repository;
     private final UserStore<A> authorResolver;
     private final File root;
@@ -116,56 +111,6 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         } catch(IOException io) {
             throw new DataRepositoryException(io);
         }
-    }
-
-    @Override public synchronized DataRevision<A> submitData(A author, String message, Map<String, InputStream> toWrite) throws DataRepositoryException {
-        try {
-            AddCommand addCommand = new Git(repository).add();
-            for(Entry<String, InputStream> curr : toWrite.entrySet()) {
-                try (ReadableByteChannel inChannel = Channels.newChannel(curr.getValue())) {
-                    File toCreate = new File(root, curr.getKey());  //define the file to create
-                    toCreate.getParentFile().mkdirs();              //create the parent dirs
-                    try (FileChannel outChannel = new FileOutputStream(toCreate).getChannel()) {
-                        fastChannelCopy(inChannel, outChannel);
-                    }
-                }
-                addCommand.addFilepattern(curr.getKey());
-            }
-            addCommand.call();
-            
-            RevCommit revision = new Git(repository)
-                                     .commit()
-                                     .setMessage(message)
-                                     .setAuthor(author.getUsername(), author.getEmail()).call();
-            
-            events.post(new GitDataSubmittedEvent(this, toWrite.keySet())); //Perform a data submitted index for the given file
-            
-            return new GitDataRevision(author, revision);
-        } catch (GitAPIException | IOException ex) {
-            throw new DataRepositoryException(ex);
-        }
-    }
-    
-    
-    @Override
-    public DataRevision<A> deleteData(A author, String message, List<String> toDelete) throws DataRepositoryException {
-        try {
-            RmCommand remove = new Git(repository).rm();
-            for(String curr: toDelete) {
-                new File(root, curr).delete();
-                remove.addFilepattern(curr);
-            }
-            remove.call();
-            RevCommit revision = new Git(repository)
-                                        .commit()
-                                        .setMessage(message)
-                                        .setAuthor(author.getUsername(), author.getEmail()).call();
-            
-            events.post(new GitDataDeletedEvent(this, toDelete)); //Perform a data deleted index for the given file
-            return new GitDataRevision(author, revision);
-        } catch (GitAPIException ex) {
-            throw new DataRepositoryException(ex);
-        } 
     }
     
     /**
@@ -261,12 +206,60 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             throw new DataRepositoryException("The specified revision does not exist");
         }
     }
+    
+    protected synchronized DataRevision<A> submit(GitOngoingDataCommit<A> toCommit, A author, String message) throws DataRepositoryException {
+        try {
+            List<Object> eventsList = new ArrayList<>();  //Create a list to store events
+            deleteData(eventsList, toCommit.getToDelete());
+            submitData(eventsList, toCommit.getToWrite());
+            
+            RevCommit revision = new Git(repository)
+                                        .commit()
+                                        .setMessage(message)
+                                        .setAuthor(author.getUsername(), author.getEmail()).call();
+            
+            for(Object event: eventsList) {
+                events.post(event);
+            }
+            return new GitDataRevision(author, revision);
+        } catch (GitAPIException | IOException ex) {
+            throw new DataRepositoryException(ex);
+        } 
+    } 
         
     /**
      * Method to close the underlying git repository when it is no longer needed
      */
     public void close() {
         repository.close();
+    }
+    
+    private void submitData(List<Object> events, Map<String, DataWriter> toWrite) throws IOException, DataRepositoryException, GitAPIException {
+        if(!toWrite.isEmpty()) {
+            AddCommand addCommand = new Git(repository).add();
+            for(Entry<String, DataWriter> curr : toWrite.entrySet()) {
+                File toCreate = new File(root, curr.getKey());  //define the file to create
+                toCreate.getParentFile().mkdirs();              //create the parent dirs
+                try (FileOutputStream out = new FileOutputStream(toCreate)){
+                    curr.getValue().write(out);
+                }
+                addCommand.addFilepattern(curr.getKey());
+            }
+            addCommand.call();    
+            events.add(new GitDataSubmittedEvent(this, toWrite.keySet())); //Perform a data submitted index for the given file
+        }
+    }
+    
+    private void deleteData(List<Object> events, List<String> toDelete) throws GitAPIException {
+        if(!toDelete.isEmpty()) {
+            RmCommand remove = new Git(repository).rm();
+            for(String curr: toDelete) {
+                new File(root, curr).delete();
+                remove.addFilepattern(curr);
+            }
+            remove.call();
+            events.add(new GitDataDeletedEvent(this, toDelete)); //Perform a data deleted index for the given file
+        }
     }
     
     private List<String> getFiles(ObjectId revision) throws DataRepositoryException {
@@ -297,17 +290,16 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             throw new DataRepositoryException(ex);
         }
     }
-    
-    private static void fastChannelCopy(final ReadableByteChannel src, final WritableByteChannel dest) throws IOException {
-        final ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
-        while (src.read(buffer) != -1) {
-            buffer.flip();
-            dest.write(buffer);
-            buffer.compact();
-        }
-        buffer.flip();
-        while (buffer.hasRemaining()) {
-            dest.write(buffer);
-        }
+
+    @Override
+    public GitOngoingDataCommit<A> submitData(String filename, DataWriter writer) {
+        return new GitOngoingDataCommit<A>(this)
+                .submitData(filename, writer);
+    }
+
+    @Override
+    public GitOngoingDataCommit<A> deleteData(String toDelete) {
+        return new GitOngoingDataCommit<A>(this)
+                .deleteData(toDelete);
     }
 }
