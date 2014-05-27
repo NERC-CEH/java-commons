@@ -13,4 +13,8 @@ public class DataRepositoryException extends Exception {
     public DataRepositoryException(Throwable ex) {
         super(ex);
     }
+    
+    public DataRepositoryException(String mess, Throwable ex) {
+        super(mess, ex);
+    }
 }

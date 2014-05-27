@@ -130,7 +130,7 @@ public class GitDataRepositoryTest {
         List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("new.file");
         assertEquals("Expected revision history of size two (Added and removed)", 2, revisions.size());
         String revisionId = revisions.get(1).getRevisionID();
-        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename, revisionId));
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(revisionId, filename));
         assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     

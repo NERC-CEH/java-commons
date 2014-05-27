@@ -82,10 +82,10 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
     
     @Override public InputStream getData(String name) throws DataRepositoryException {
-        return getData(name, Constants.HEAD);
+        return getData(Constants.HEAD, name);
     }
 
-    @Override public InputStream getData(String name, String revisionStr) throws DataRepositoryException {
+    @Override public InputStream getData(String revisionStr, String name) throws DataRepositoryException {
         try {
             RevWalk revWalk = new RevWalk(repository);
             ObjectId revision = resolveRevision(revisionStr);
@@ -103,10 +103,10 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                     }
                 }
                 
-                throw new DataRepositoryException("The file does not exist");
+                throw new GitFileNotFoundException("The file does not exist");
             }
             else {    
-                throw new DataRepositoryException("The specified revision does not exist");
+                throw new GitRevisionNotFoundException("The specified revision does not exist");
             }
         } catch(IOException io) {
             throw new DataRepositoryException(io);
@@ -177,7 +177,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                 return toReturn;
             }
             else {
-                throw new DataRepositoryException("The repository has no head");
+                throw new GitRevisionNotFoundException("The repository has no head");
             }
         }
         catch(IOException | GitAPIException | UnknownUserException ex) {
@@ -203,7 +203,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             return getFiles(revision);
         }
         else {
-            throw new DataRepositoryException("The specified revision does not exist");
+            throw new GitRevisionNotFoundException("The specified revision does not exist");
         }
     }
     
