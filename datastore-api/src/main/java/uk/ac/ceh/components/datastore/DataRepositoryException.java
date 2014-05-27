@@ -1,10 +1,12 @@
 package uk.ac.ceh.components.datastore;
 
+import java.io.IOException;
+
 /**
  *
  * @author cjohn
  */
-public class DataRepositoryException extends Exception {
+public class DataRepositoryException extends IOException {
 
     public DataRepositoryException(String mess) {
         super(mess);

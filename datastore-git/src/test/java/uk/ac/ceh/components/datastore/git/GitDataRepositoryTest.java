@@ -3,12 +3,12 @@ package uk.ac.ceh.components.datastore.git;
 import com.google.common.eventbus.EventBus;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jgit.lib.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class GitDataRepositoryTest {
                  .commit(testUser, "This is a test message");
         
         //Then
-        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename).getInputStream());
         assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
@@ -88,7 +88,7 @@ public class GitDataRepositoryTest {
                  .commit(testUser, "This is a test message");
                 
         //Then
-        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename).getInputStream());
         assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
@@ -105,7 +105,7 @@ public class GitDataRepositoryTest {
         userStore.deleteUser("testuser"); //delete the original user
         
         //Then
-        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename));
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(filename).getInputStream());
         assertNotSame("The user was deleted so that user should have been recreated as a phantom", 
                 testUser, dataStore.getRevisions(filename).get(0).getAuthor());
         
@@ -130,7 +130,7 @@ public class GitDataRepositoryTest {
         List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("new.file");
         assertEquals("Expected revision history of size two (Added and removed)", 2, revisions.size());
         String revisionId = revisions.get(1).getRevisionID();
-        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(revisionId, filename));
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(revisionId, filename).getInputStream());
         assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
@@ -248,10 +248,23 @@ public class GitDataRepositoryTest {
         dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
-        InputStream files = dataStore.getData("test1.file", "4920616d20736f207661696e2049206b6e6f772e");
+        GitDataDocument files = dataStore.getData("test1.file", "4920616d20736f207661696e2049206b6e6f772e");
         
         //Then
         fail("Expected to fail getting the file");
+    }
+    
+    @Test
+    public void getTheLatestRevisionForAPopulatedRepo() throws DataRepositoryException, UnknownUserException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+        
+        //When
+        String latestRevision = dataStore.getLatestRevision();
+               
+        //Then
+        assertTrue("Expected a valid id", ObjectId.isId(latestRevision));
     }
     
     @Test(expected=DataRepositoryException.class)

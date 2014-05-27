@@ -4,7 +4,6 @@ import com.google.common.eventbus.EventBus;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,11 +80,11 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         }
     }
     
-    @Override public InputStream getData(String name) throws DataRepositoryException {
+    @Override public GitDataDocument getData(String name) throws DataRepositoryException {
         return getData(Constants.HEAD, name);
     }
 
-    @Override public InputStream getData(String revisionStr, String name) throws DataRepositoryException {
+    @Override public GitDataDocument getData(String revisionStr, String name) throws DataRepositoryException {
         try {
             RevWalk revWalk = new RevWalk(repository);
             ObjectId revision = resolveRevision(revisionStr);
@@ -99,7 +98,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                     CanonicalTreeParser canonicalTreeParser = treeWalk.getTree(0, CanonicalTreeParser.class);
 
                     if(!canonicalTreeParser.eof()) {
-                        return repository.open(canonicalTreeParser.getEntryObjectId()).openStream();
+                        return new GitDataDocument(name, revisionStr, repository.open(canonicalTreeParser.getEntryObjectId()));
                     }
                 }
                 
@@ -111,6 +110,11 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
         } catch(IOException io) {
             throw new DataRepositoryException(io);
         }
+    }
+    
+    @Override
+    public String getLatestRevision() throws DataRepositoryException {
+        return resolveRevision(Constants.HEAD).getName();
     }
     
     /**
