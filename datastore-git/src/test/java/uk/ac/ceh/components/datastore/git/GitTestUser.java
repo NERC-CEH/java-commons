@@ -1,6 +1,7 @@
 
 package uk.ac.ceh.components.datastore.git;
 
+import lombok.Data;
 import uk.ac.ceh.components.datastore.DataAuthor;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.UserAttribute;
@@ -9,20 +10,11 @@ import uk.ac.ceh.components.userstore.UserAttribute;
  *
  * @author cjohn
  */
+@Data
 public class GitTestUser implements User, DataAuthor{
     private @UserAttribute(UserAttribute.USERNAME) String username;
     private @UserAttribute(UserAttribute.EMAIL) String email;
     
-    @Override
-    public String getUsername() {
-        return username;
-    }
-
-    @Override
-    public String getEmail() {
-        return email;
-    }
-
     public static class Builder {
         private GitTestUser instance;
         

@@ -368,6 +368,22 @@ public class GitDataRepositoryTest {
     }
     
     @Test
+    public void commitOfUnChangedFileReturnsThePreviousCommitAuthor() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser firstUser = userStore.getUser("testuser");
+        GitTestUser secondUser = userStore.getUser("testuser2");
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(firstUser, "first commit of file");
+        
+        //When
+        DataRevision<GitTestUser> revision = dataStore.submitData("test1.file", new StringDataWriter("data"))
+                                                      .commit(secondUser, "recommit of exactly the same data");
+        
+        //Then
+        assertEquals("Expected the revision to be authored by the last commit", firstUser, revision.getAuthor());
+    }
+    
+    @Test
     public void reAddingFileDoesResultInMultipleCommits() throws UnknownUserException, DataRepositoryException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
@@ -393,6 +409,9 @@ public class GitDataRepositoryTest {
     private void populateTestUsers() throws UsernameAlreadyTakenException {
         userStore.addUser(new GitTestUser.Builder("testuser")
                 .setEmail("test@user.com")
+                .build(), "");
+        userStore.addUser(new GitTestUser.Builder("testuser2")
+                .setEmail("test2@user.com")
                 .build(), "");
     }
     
