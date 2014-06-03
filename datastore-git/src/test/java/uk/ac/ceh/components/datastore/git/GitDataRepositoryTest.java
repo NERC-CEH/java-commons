@@ -261,10 +261,11 @@ public class GitDataRepositoryTest {
         dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
-        String latestRevision = dataStore.getLatestRevision();
+        DataRevision<GitTestUser> latestRevision = dataStore.getLatestRevision();
                
         //Then
-        assertTrue("Expected a valid id", ObjectId.isId(latestRevision));
+        assertTrue("Expected a valid id", ObjectId.isId(latestRevision.getRevisionID()));
+        assertEquals("Expected test user to have been the commiter", testUser, latestRevision.getAuthor());
     }
     
     @Test(expected=DataRepositoryException.class)
@@ -351,6 +352,56 @@ public class GitDataRepositoryTest {
         }
     }
     
+    @Test
+    public void commitOfUnChangedFileDoesNotPerformEmptyGitCommit() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "This is a test message");
+        
+        //When
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "Attempt to commit the same data again");
+        
+        //Then
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("test1.file");
+        assertEquals("Expected to only find the original revision", 1, revisions.size());
+    }
+    
+    @Test
+    public void commitOfUnChangedFileReturnsThePreviousCommitAuthor() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser firstUser = userStore.getUser("testuser");
+        GitTestUser secondUser = userStore.getUser("testuser2");
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(firstUser, "first commit of file");
+        
+        //When
+        DataRevision<GitTestUser> revision = dataStore.submitData("test1.file", new StringDataWriter("data"))
+                                                      .commit(secondUser, "recommit of exactly the same data");
+        
+        //Then
+        assertEquals("Expected the revision to be authored by the last commit", firstUser, revision.getAuthor());
+    }
+    
+    @Test
+    public void reAddingFileDoesResultInMultipleCommits() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "This is a test message");
+        
+        dataStore.deleteData("test1.file").commit(testUser, "Deleting the file");
+        
+        //When
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "Attempt to commit the same data again");
+        
+        //Then
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("test1.file");
+        assertEquals("Expected the readding of the file to yeild 3 commits", 3, revisions.size());
+    }
+    
     @After
     public void closeRepository() throws IOException {
         dataStore.close();
@@ -359,6 +410,9 @@ public class GitDataRepositoryTest {
     private void populateTestUsers() throws UsernameAlreadyTakenException {
         userStore.addUser(new GitTestUser.Builder("testuser")
                 .setEmail("test@user.com")
+                .build(), "");
+        userStore.addUser(new GitTestUser.Builder("testuser2")
+                .setEmail("test2@user.com")
                 .build(), "");
     }
     
