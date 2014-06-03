@@ -15,6 +15,7 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
@@ -25,6 +26,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import uk.ac.ceh.components.datastore.*;
 import uk.ac.ceh.components.userstore.UnknownUserException;
@@ -113,8 +115,15 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
     
     @Override
-    public String getLatestRevision() throws DataRepositoryException {
-        return resolveRevision(Constants.HEAD).getName();
+    public GitDataRevision<A> getLatestRevision() throws DataRepositoryException {
+        try {
+            RevWalk revWalk = new RevWalk(repository);
+            RevCommit commit = revWalk.parseCommit(resolveRevision(Constants.HEAD));
+            A author = getAuthor(commit.getAuthorIdent());
+            return new GitDataRevision<A>(author, commit);
+        } catch (UnknownUserException | IOException ex) {
+            throw new DataRepositoryException(ex);
+        }
     }
     
     /**
@@ -169,13 +178,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                         .add(revision)
                         .addPath(name);
                 for(RevCommit commit : logCommand.call()) {
-                    PersonIdent authorIdent = commit.getAuthorIdent();
-                    String username = authorIdent.getName();
-                    A author = (authorResolver.userExists(username)) 
-                            ? authorResolver.getUser(username) 
-                            : phantomUserFactory.newUserBuilder(username)
-                                            .set(UserAttribute.EMAIL, authorIdent.getEmailAddress())
-                                            .build();
+                    A author = getAuthor(commit.getAuthorIdent());                    
                     toReturn.add(new GitDataRevision<>(author, commit));
                 }
                 return toReturn;
@@ -217,19 +220,27 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             deleteData(eventsList, toCommit.getToDelete());
             submitData(eventsList, toCommit.getToWrite());
             
-            RevCommit revision = new Git(repository)
+            //Check to see if the above operations yeild any change in the repository.
+            //If not, we won't perform the commit
+            IndexDiff diff = new IndexDiff(repository, Constants.HEAD, new FileTreeIterator(repository) );
+            if(diff.diff()) {
+                RevCommit revision = new Git(repository)
                                         .commit()
                                         .setMessage(message)
                                         .setAuthor(author.getUsername(), author.getEmail()).call();
             
-            for(Object event: eventsList) {
-                events.post(event);
+                for(Object event: eventsList) {
+                    events.post(event);
+                }
+                return new GitDataRevision(author, revision);
             }
-            return new GitDataRevision(author, revision);
+            else {
+                return getLatestRevision();
+            }
         } catch (GitAPIException | IOException ex) {
             throw new DataRepositoryException(ex);
         } 
-    } 
+    }
         
     /**
      * Method to close the underlying git repository when it is no longer needed
@@ -249,8 +260,8 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                 }
                 addCommand.addFilepattern(curr.getKey());
             }
-            addCommand.call();    
             events.add(new GitDataSubmittedEvent(this, toWrite.keySet())); //Perform a data submitted index for the given file
+            addCommand.call();
         }
     }
     
@@ -261,9 +272,18 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                 new File(root, curr).delete();
                 remove.addFilepattern(curr);
             }
-            remove.call();
             events.add(new GitDataDeletedEvent(this, toDelete)); //Perform a data deleted index for the given file
+            remove.call();
         }
+    }
+    
+    private A getAuthor(PersonIdent authorIdent) throws UnknownUserException {
+        String username = authorIdent.getName();
+        return (authorResolver.userExists(username)) 
+                ? authorResolver.getUser(username) 
+                : phantomUserFactory.newUserBuilder(username)
+                                .set(UserAttribute.EMAIL, authorIdent.getEmailAddress())
+                                .build();
     }
     
     private List<String> getFiles(ObjectId revision) throws DataRepositoryException {

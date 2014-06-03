@@ -261,10 +261,10 @@ public class GitDataRepositoryTest {
         dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
-        String latestRevision = dataStore.getLatestRevision();
+        GitDataRevision<GitTestUser> latestRevision = dataStore.getLatestRevision();
                
         //Then
-        assertTrue("Expected a valid id", ObjectId.isId(latestRevision));
+        assertTrue("Expected a valid id", ObjectId.isId(latestRevision.getRevisionID()));
     }
     
     @Test(expected=DataRepositoryException.class)
@@ -349,6 +349,40 @@ public class GitDataRepositoryTest {
         finally {
             FileUtils.deleteDirectory(originRepository);
         }
+    }
+    
+    @Test
+    public void commitOfUnChangedFileDoesNotPerformEmptyGitCommit() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "This is a test message");
+        
+        //When
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "Attempt to commit the same data again");
+        
+        //Then
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("test1.file");
+        assertEquals("Expected to only find the original revision", 1, revisions.size());
+    }
+    
+    @Test
+    public void reAddingFileDoesResultInMultipleCommits() throws UnknownUserException, DataRepositoryException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "This is a test message");
+        
+        dataStore.deleteData("test1.file").commit(testUser, "Deleting the file");
+        
+        //When
+        dataStore.submitData("test1.file", new StringDataWriter("data"))
+                 .commit(testUser, "Attempt to commit the same data again");
+        
+        //Then
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions("test1.file");
+        assertEquals("Expected the readding of the file to yeild 3 commits", 3, revisions.size());
     }
     
     @After

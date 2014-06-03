@@ -7,7 +7,7 @@ import java.util.List;
  * @author cjohn
  */
 public interface DataRepository<A extends DataAuthor> {
-    String getLatestRevision() throws DataRepositoryException;
+    DataRevision<A> getLatestRevision() throws DataRepositoryException;
     
     DataDocument getData(String filename) throws DataRepositoryException;
     DataDocument getData(String version, String filename) throws DataRepositoryException;
