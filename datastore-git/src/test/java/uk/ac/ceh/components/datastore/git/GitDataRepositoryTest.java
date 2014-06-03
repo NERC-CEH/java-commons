@@ -261,7 +261,7 @@ public class GitDataRepositoryTest {
         dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
-        GitDataRevision<GitTestUser> latestRevision = dataStore.getLatestRevision();
+        DataRevision<GitTestUser> latestRevision = dataStore.getLatestRevision();
                
         //Then
         assertTrue("Expected a valid id", ObjectId.isId(latestRevision.getRevisionID()));

@@ -115,7 +115,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
     
     @Override
-    public GitDataRevision<A> getLatestRevision() throws DataRepositoryException {
+    public DataRevision<A> getLatestRevision() throws DataRepositoryException {
         try {
             RevWalk revWalk = new RevWalk(repository);
             RevCommit commit = revWalk.parseCommit(resolveRevision(Constants.HEAD));
