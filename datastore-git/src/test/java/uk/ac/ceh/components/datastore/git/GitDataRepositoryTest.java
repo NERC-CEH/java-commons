@@ -265,6 +265,7 @@ public class GitDataRepositoryTest {
                
         //Then
         assertTrue("Expected a valid id", ObjectId.isId(latestRevision.getRevisionID()));
+        assertEquals("Expected test user to have been the commiter", testUser, latestRevision.getAuthor());
     }
     
     @Test(expected=DataRepositoryException.class)
