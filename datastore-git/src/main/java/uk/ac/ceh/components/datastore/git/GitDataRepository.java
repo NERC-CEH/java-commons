@@ -28,6 +28,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import uk.ac.ceh.components.datastore.*;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
@@ -120,7 +121,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             RevWalk revWalk = new RevWalk(repository);
             RevCommit commit = revWalk.parseCommit(resolveRevision(Constants.HEAD));
             A author = getAuthor(commit.getAuthorIdent());
-            return new GitDataRevision<A>(author, commit);
+            return new GitDataRevision<>(author, commit);
         } catch (UnknownUserException | IOException ex) {
             throw new DataRepositoryException(ex);
         }
@@ -223,6 +224,7 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             //Check to see if the above operations yeild any change in the repository.
             //If not, we won't perform the commit
             IndexDiff diff = new IndexDiff(repository, Constants.HEAD, new FileTreeIterator(repository) );
+            diff.setFilter(PathFilterGroup.createFromStrings(toCommit.getSubmittedFiles()));
             if(diff.diff()) {
                 RevCommit revision = new Git(repository)
                                         .commit()

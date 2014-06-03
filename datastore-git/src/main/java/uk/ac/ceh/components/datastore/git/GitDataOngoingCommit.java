@@ -44,5 +44,11 @@ public class GitDataOngoingCommit<A extends DataAuthor & User> implements DataOn
     public DataRevision<A> commit(A author, String message) throws DataRepositoryException {
         return repository.submit(this, author, message);
     }
-
+    
+    public List<String> getSubmittedFiles() {
+        List<String> submittedFiles = new ArrayList<>();
+        submittedFiles.addAll(toDelete);
+        submittedFiles.addAll(toWrite.keySet());
+        return submittedFiles;
+    }
 }
