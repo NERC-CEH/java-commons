@@ -30,6 +30,7 @@
         <module>userstore-crowd</module>
         <module>userstore-inmemory</module>
         <module>springsecurity-userstore</module>
+        <module>jaas-userstore-crowd</module>
     </modules>
 	
     <scm>
@@ -95,7 +96,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.5.7.201204190339</version>
+                <version>0.7.1.201405082137</version>
                 <executions>
                     <execution>
                         <goals>
