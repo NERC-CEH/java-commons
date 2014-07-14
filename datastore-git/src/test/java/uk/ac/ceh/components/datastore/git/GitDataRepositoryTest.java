@@ -3,6 +3,7 @@ package uk.ac.ceh.components.datastore.git;
 import com.google.common.eventbus.EventBus;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import lombok.Data;
@@ -402,6 +403,48 @@ public class GitDataRepositoryTest {
         assertEquals("Expected the readding of the file to yeild 3 commits", 3, revisions.size());
     }
     
+    @Test
+    public void optimizeShrinksRepoWithLotsSimilarData() throws DataRepositoryException, UnknownUserException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        
+        for(int i=0; i< 100; i++) {
+            dataStore.submitData("test" + i + ".file", new StringDataWriter("testdata"))
+                     .commit(testUser, "This is a test message"); 
+        }
+        
+        long sizeOfRepoBeforeOptimize = FileUtils.sizeOfDirectory(folder.getRoot());
+        
+        //When
+        dataStore.optimize();
+        
+        //Then
+        long sizeOfRepoAfterOptimize = FileUtils.sizeOfDirectory(folder.getRoot());
+        assertTrue("Expected the repo to have shrunk in size", sizeOfRepoBeforeOptimize > sizeOfRepoAfterOptimize);
+    }
+    
+    @Test
+    public void optimizeDoesntRemoveHistory() throws DataRepositoryException, UnknownUserException, IOException {
+        //Given
+        GitTestUser testUser = userStore.getUser("testuser");
+        String filename = "new.file";
+        String file = "file";
+        
+        dataStore.submitData(filename, new StringDataWriter(file))
+                     .commit(testUser, "This is a test message");
+        dataStore.deleteData(filename).commit(testUser, "Deleting file");
+        
+        //When
+        dataStore.optimize();
+        
+        //Then
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions(filename);
+        assertEquals("Expected revision history of size two (Added and removed)", 2, revisions.size());
+        String revisionId = revisions.get(1).getRevisionID();
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(revisionId, filename).getInputStream());
+        assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
+    }
+    
     @After
     public void closeRepository() throws IOException {
         dataStore.close();
@@ -421,12 +464,8 @@ public class GitDataRepositoryTest {
         private final String content;
         
         @Override
-        public void write(OutputStream out) throws DataRepositoryException {
-            try {
-                out.write(content.getBytes());
-            } catch (IOException ex) {
-                throw new DataRepositoryException(ex);
-            }
+        public void write(OutputStream out) throws IOException {
+            out.write(content.getBytes());
         }
     }
 }

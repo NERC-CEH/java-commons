@@ -243,6 +243,22 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             throw new DataRepositoryException(ex);
         } 
     }
+    
+    /**
+     * Perform a gc operation on the git repository, this will optimise the 
+     * git repository's size. It is recommended that applications schedule this
+     * operation at intervals which best fit usage of that application.
+     * 
+     * A dumb recommendation would be to do this nightly at a period of low usage
+     * @throws DataRepositoryException if the gc command cant be called
+     */
+    public synchronized void optimize() throws DataRepositoryException {
+        try {
+            new Git(repository).gc().call();
+        } catch(GitAPIException ex) {
+            throw new DataRepositoryException(ex);
+        }
+    }
         
     /**
      * Method to close the underlying git repository when it is no longer needed
