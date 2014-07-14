@@ -229,7 +229,7 @@ public class GitDataRepositoryTest {
         assertEquals("Expected one files in repository", 1, files.size());
     }
     
-    @Test(expected=DataRepositoryException.class)
+    @Test(expected=GitRevisionNotFoundException.class)
     public void getFileListFromNonExistantRevision() throws DataRepositoryException, UnknownUserException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
@@ -242,14 +242,27 @@ public class GitDataRepositoryTest {
         fail("Expected to fail getting the file list");
     }
     
-    @Test(expected=DataRepositoryException.class)
+    @Test(expected=GitFileNotFoundException.class)
+    public void getFileWhichDoesntExist() throws UnknownUserException, DataRepositoryException {
+        //Given 
+        GitTestUser testUser = userStore.getUser("testuser");
+        dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
+        
+        //When
+        dataStore.getData("file.not.present");
+        
+        //Then
+        fail("Expected to fail with missing file exeception");
+    }
+    
+    @Test(expected=GitRevisionNotFoundException.class)
     public void getFileFromNonExistantRevision() throws DataRepositoryException, UnknownUserException {
         //Given
         GitTestUser testUser = userStore.getUser("testuser");
         dataStore.submitData("test1.file", new StringDataWriter("data")).commit(testUser, "This is a test message");
         
         //When
-        GitDataDocument files = dataStore.getData("test1.file", "4920616d20736f207661696e2049206b6e6f772e");
+        GitDataDocument files = dataStore.getData("4920616d20736f207661696e2049206b6e6f772e", "test1.file");
         
         //Then
         fail("Expected to fail getting the file");
@@ -269,7 +282,7 @@ public class GitDataRepositoryTest {
         assertEquals("Expected test user to have been the commiter", testUser, latestRevision.getAuthor());
     }
     
-    @Test(expected=DataRepositoryException.class)
+    @Test(expected=GitRevisionNotFoundException.class)
     public void getFileBeforeAddingAnyData() throws DataRepositoryException {
         //Given
         String fileToGet = "dummyfile";
@@ -281,7 +294,7 @@ public class GitDataRepositoryTest {
         fail("Expected to fail when getting the file");
     }
     
-    @Test(expected=DataRepositoryException.class)
+    @Test(expected=GitRevisionNotFoundException.class)
     public void getFilesFromHEADOfEmptyRepository() throws DataRepositoryException {
         //Given
         String revision = "HEAD";
@@ -319,7 +332,7 @@ public class GitDataRepositoryTest {
         assertEquals("Expected no files in repository", 0, files.size());
     }
         
-    @Test(expected=DataRepositoryException.class)
+    @Test(expected=GitRevisionNotFoundException.class)
     public void getRevisionListForFilesWhenRepoHasNoHead() throws DataRepositoryException {
         //Given
         String filename = "dummy.txt";

@@ -11,6 +11,10 @@ public class GitRevisionNotFoundException extends DataRepositoryException {
     public GitRevisionNotFoundException(String mess) {
         super(mess);
     }
+    
+    public GitRevisionNotFoundException(String mess, Throwable ex) {
+        super(mess, ex);
+    }
 
     public GitRevisionNotFoundException(Throwable ex) {
         super(ex);

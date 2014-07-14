@@ -14,6 +14,10 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.ObjectId;
@@ -88,10 +92,11 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     }
 
     @Override public GitDataDocument getData(String revisionStr, String name) throws DataRepositoryException {
-        try {
-            RevWalk revWalk = new RevWalk(repository);
-            ObjectId revision = resolveRevision(revisionStr);
-            if(revision != null) {
+        RevWalk revWalk = new RevWalk(repository);
+        ObjectId revision = resolveRevision(revisionStr);
+        
+        if(revision != null) {
+            try {
                 RevCommit commit = revWalk.parseCommit(revision);
 
                 TreeWalk treeWalk = TreeWalk.forPath(repository, name, commit.getTree());
@@ -104,14 +109,16 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                         return new GitDataDocument(name, revisionStr, repository.open(canonicalTreeParser.getEntryObjectId()));
                     }
                 }
-                
-                throw new GitFileNotFoundException("The file does not exist");
+            } catch(MissingObjectException | IncorrectObjectTypeException ex) {
+                throw new GitRevisionNotFoundException("The specified revision does not exist", ex);
             }
-            else {    
-                throw new GitRevisionNotFoundException("The specified revision does not exist");
+            catch(IOException io) {
+                throw new DataRepositoryException(io);
             }
-        } catch(IOException io) {
-            throw new DataRepositoryException(io);
+            throw new GitFileNotFoundException("The file does not exist");
+        }
+        else {    
+            throw new GitRevisionNotFoundException("The specified revision does not exist");
         }
     }
     
@@ -122,6 +129,8 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             RevCommit commit = revWalk.parseCommit(resolveRevision(Constants.HEAD));
             A author = getAuthor(commit.getAuthorIdent());
             return new GitDataRevision<>(author, commit);
+        } catch (DataRepositoryException ex) {
+            throw ex;   
         } catch (UnknownUserException | IOException ex) {
             throw new DataRepositoryException(ex);
         }
@@ -170,11 +179,12 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
      * @throws DataRepositoryException 
      */
     @Override public List<DataRevision<A>> getRevisions(String name) throws DataRepositoryException {
-        try {
-            List<DataRevision<A>> toReturn = new ArrayList<>();
-            Git git = new Git(repository);
-            ObjectId revision = resolveRevision(Constants.HEAD);
-            if(revision != null) { //Only perform the git log if the repo has a HEAD
+        List<DataRevision<A>> toReturn = new ArrayList<>();
+        Git git = new Git(repository);
+        ObjectId revision = resolveRevision(Constants.HEAD);
+        if(revision != null) { //Only perform the git log if the repo has a HEAD
+            try {
+            
                 LogCommand logCommand = git.log()
                         .add(revision)
                         .addPath(name);
@@ -183,13 +193,12 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                     toReturn.add(new GitDataRevision<>(author, commit));
                 }
                 return toReturn;
+            } catch(IOException | GitAPIException | UnknownUserException ex) {
+                throw new DataRepositoryException(ex);
             }
-            else {
-                throw new GitRevisionNotFoundException("The repository has no head");
-            }
-        }
-        catch(IOException | GitAPIException | UnknownUserException ex) {
-            throw new DataRepositoryException(ex);
+        } 
+        else {
+            throw new GitRevisionNotFoundException("The repository has no head");
         }
     }
 
@@ -239,6 +248,8 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             else {
                 return getLatestRevision();
             }
+        } catch (DataRepositoryException ex) {
+            throw ex;
         } catch (GitAPIException | IOException ex) {
             throw new DataRepositoryException(ex);
         } 
@@ -317,8 +328,9 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
                 toReturn.add(walk.getPathString());
             }
             return toReturn;
-        }
-        catch(IOException ex) {
+        } catch(MissingObjectException | IncorrectObjectTypeException ex) {
+            throw new GitRevisionNotFoundException("Failed to find the specified revision", ex);
+        } catch(IOException ex) {
             throw new DataRepositoryException(ex);
         }
     }
@@ -327,6 +339,9 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     private ObjectId resolveRevision(String revisionStr) throws DataRepositoryException {
         try {
             return repository.resolve(revisionStr);
+        }
+        catch(AmbiguousObjectException | IncorrectObjectTypeException | RevisionSyntaxException ex) {
+            throw new GitRevisionNotFoundException("Failed to find the specified revision", ex);
         }
         catch(IOException ex) {
             throw new DataRepositoryException(ex);
