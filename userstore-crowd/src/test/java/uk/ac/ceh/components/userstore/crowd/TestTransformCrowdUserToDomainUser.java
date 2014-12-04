@@ -36,6 +36,7 @@ public class TestTransformCrowdUserToDomainUser {
         user.setFirstname("firstname");
         user.setLastname("lastname");
         user.setEmail("email");
+        user.setActive(false);
         
         UserBuilder builder = mock(UserBuilder.class);
         when(builder.set(any(String.class), any(Object.class))).thenReturn(builder);
@@ -49,5 +50,6 @@ public class TestTransformCrowdUserToDomainUser {
         verify(builder).set(UserAttribute.EMAIL, "email");
         verify(builder).set(UserAttribute.FIRSTNAME, "firstname");
         verify(builder).set(UserAttribute.LASTNAME, "lastname");
+        verify(builder).set(UserAttribute.ACTIVE, false);
     }
 }

@@ -18,7 +18,7 @@ public class CrowdUser {
     public @JsonProperty("first-name") String firstname;
     public @JsonProperty("last-name") String lastname;
     public @JsonProperty("display-name") String displayname;
-    public boolean active = true;
+    public boolean active;
     
     public CrowdAttributes attributes = new CrowdAttributes();
     public CrowdUserPassword password;

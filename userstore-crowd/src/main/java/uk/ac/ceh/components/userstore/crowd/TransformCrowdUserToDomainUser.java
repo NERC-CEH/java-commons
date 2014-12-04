@@ -32,7 +32,8 @@ class TransformCrowdUserToDomainUser<U extends User> implements Function<CrowdUs
                                              .set(UserAttribute.EMAIL, crowdUser.getEmail())
                                              .set(UserAttribute.FIRSTNAME, crowdUser.getFirstname())
                                              .set(UserAttribute.LASTNAME, crowdUser.getLastname())
-                                             .set(UserAttribute.DISPLAY_NAME, crowdUser.getDisplayname());
+                                             .set(UserAttribute.DISPLAY_NAME, crowdUser.getDisplayname())
+                                             .set(UserAttribute.ACTIVE, crowdUser.isActive());
         
         for(CrowdAttribute attribute : crowdUser.getAttributes().getAttributes()) {
             Type desiredTypeForURI = factory.getDesiredTypeForURI(attribute.getName());

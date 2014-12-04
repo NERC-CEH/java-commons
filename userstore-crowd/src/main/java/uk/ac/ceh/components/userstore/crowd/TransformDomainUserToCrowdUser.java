@@ -35,6 +35,7 @@ class TransformDomainUserToCrowdUser<U extends User> implements Function<U, Crow
         attributesToRead.remove(UserAttribute.DISPLAY_NAME);
         attributesToRead.remove(UserAttribute.FIRSTNAME);
         attributesToRead.remove(UserAttribute.LASTNAME);
+        attributesToRead.remove(UserAttribute.ACTIVE);
     }
     
     @Override
@@ -45,6 +46,11 @@ class TransformDomainUserToCrowdUser<U extends User> implements Function<U, Crow
         newUser.setDisplayname(reader.get(user, UserAttribute.DISPLAY_NAME, String.class));
         newUser.setFirstname(reader.get(user, UserAttribute.FIRSTNAME, String.class));
         newUser.setLastname(reader.get(user, UserAttribute.LASTNAME, String.class));
+        
+        // Reading a Boolean value, if ACTIVE is null then we will default to 
+        // activating the user. 
+        Boolean isActive = reader.get(user, UserAttribute.ACTIVE, Boolean.class);
+        newUser.setActive((isActive == null) ? true : isActive);
         
         newUser.setAttributes(getCrowdAttributes(user));
         return newUser;

@@ -18,6 +18,7 @@ public @interface UserAttribute {
     public static final String FIRSTNAME = "ceh:user:firstname";
     public static final String LASTNAME = "ceh:user:lastname";
     public static final String PHONE_NUMBER = "ceh:user:phonenumber";
+    public static final String ACTIVE = "ceh:user:active";
     
     String value();
 }
