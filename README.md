@@ -10,6 +10,21 @@ The userstore api provides a consistent wrapper around User and Group authentica
 
 A In Memory implementation of the userstore api is provided, however this is intended to be used for testing.
 
+### User Attributes
+
+During our application development, we have released that certain details which one application gathers and requires to be stored in a userstore do not apply to all applications. Therefore the userstore allows principals to store/create a subset of user attributes. The default way of doing this is to use an annotated Java Object and a **uk.ac.ceh.components.userstore.AnnotatedUserHelper**
+This allows your application to create users in the following form:
+
+    @Data // Lomboks data annotation
+    public class MyUser implements User {
+      @UserAttribute(USERNAME) private String username;
+      @UserAttribute(EMAIL) private String email;
+      @UserAttribute("customAttribute") private String myCustomAttribute;
+      ...
+    }
+
+### Spring Security
+
 A component is provided to hook the userstore-api to hook into spring security. An example javaconfig setup of this is provided below
 
     @Configuration
