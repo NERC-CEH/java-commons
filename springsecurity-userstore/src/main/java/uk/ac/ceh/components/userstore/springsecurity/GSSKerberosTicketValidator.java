@@ -49,7 +49,7 @@ public class GSSKerberosTicketValidator implements KerberosTicketValidator {
         try {
             return Subject.doAs(this.serviceSubject, new KerberosValidateAction(token));
         } catch (PrivilegedActionException e) {
-            throw new BadCredentialsException("Kerberos validation not succesfull", e);
+            throw new BadCredentialsException("Kerberos validation not successful", e);
         }
     }
     
