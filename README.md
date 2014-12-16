@@ -4,6 +4,57 @@
 
 A suite of common java components used for CEH applications. Below is a description of the various aspects which this project covers.
 
+## Datastore api
+
+The datastore api provides a mechanism to store, retrieve and version streams of data. It hooks in to the [Userstore api](#userstore-api) to provide an audit of who and when an input stream has changed. The reference implementation is powered by JGit, so ultimately creates a git repository.
+
+For testing, we recommend that you join the datastore-git with a TemporaryFolder rule. This allows git repositories to be created per test and destroyed afterwards. The example below shows how to wire this up.
+
+    public class GitDataRepositoryTest {
+      public @Rule TemporaryFolder folder= new TemporaryFolder();
+      private @Mock EventBus bus;
+      private @Spy InMemoryUserStore<GitTestUser> userStore;
+      private GitDataRepository<GitTestUser> dataStore;
+      private final AnnotatedUserHelper factory;
+      
+      public GitDataRepositoryTest() {
+          factory = new AnnotatedUserHelper(GitTestUser.class);
+      }
+      
+      @Before
+      public void createEmptyRepository() throws IOException, UsernameAlreadyTakenException {        
+          //create an in memory userstore
+          userStore = new InMemoryUserStore<>();
+          populateTestUsers();
+          
+          //Init mocks
+          MockitoAnnotations.initMocks(this);
+          
+          //create a testRepo folder and then a git data repository
+          dataStore = new GitDataRepository(folder.getRoot(), userStore, factory, bus);
+      }
+    }
+
+
+## Token Generation api
+
+The token generation api defines a simple interface to allow creation of Tokens (essentially short lived messages). The token is intended to be secure such that it can be read by all but only understood by the token generator.
+
+The default implementation is provides a way of generating tokens which requires no state to be maintained (other than a cryptographic key). Usage is pretty straight forward and is demonstrated below.
+
+    String myMessage = "My Secret Message";
+    int ttl = 1000; 
+    
+    // Generate a token
+    Token generateToken = generator.generateToken(myMessage.getBytes(), ttl);
+
+    // Read the token back to a message
+    byte[] message = generator.getMessage(generateToken);
+
+In the case of the stateless implementation, multiple token generators can read each others messages as long as they share the same cryptographic key.
+
+Tokens are intended to be small messages, if larger messages are required consider using a different system.
+
 ## Userstore api
 
 The userstore api provides a consistent wrapper around User and Group authentication mechanisms. The reference implementation of the userstore api is powered by [Atlassian Crowd](https://www.atlassian.com/software/crowd/overview) (see userstore-crowd). This implementation backs on to an instance of crowds rest api to perform user/group lookup and authentication.
