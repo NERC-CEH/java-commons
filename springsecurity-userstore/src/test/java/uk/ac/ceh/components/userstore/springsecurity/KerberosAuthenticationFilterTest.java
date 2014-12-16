@@ -3,6 +3,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -10,10 +11,12 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
@@ -25,24 +28,28 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.RememberMeServices;
-import static uk.ac.ceh.components.userstore.springsecurity.SpnegoAuthenticationFilter.isSpnegoRequest;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import uk.ac.ceh.components.userstore.UnknownUserException;
 
 /**
  *
  * @author cjohn
  */
-public class SpnegoAuthenticationFilterTest {
+public class KerberosAuthenticationFilterTest {
     @Mock AuthenticationManager authenticationManager;
+    @Mock KerberosTicketValidator ticketValidator;
     @Mock RememberMeServices rememberMeServices;
+    @Mock RequestMatcher matcher;
     @Mock(answer=RETURNS_DEEP_STUBS) SecurityContext securityContext;
     
-    SpnegoAuthenticationFilter filter;
+    KerberosAuthenticationFilter filter;
     
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        filter = new SpnegoAuthenticationFilter(authenticationManager);
+        filter = new KerberosAuthenticationFilter(authenticationManager, ticketValidator, matcher);
         filter.setRememberMeServices(rememberMeServices);
     }
     
@@ -54,7 +61,7 @@ public class SpnegoAuthenticationFilterTest {
         when(securityContext.getAuthentication()).thenReturn(auth);
         
         //When
-        boolean isAuthenticated = SpnegoAuthenticationFilter.isAuthenticated();
+        boolean isAuthenticated = filter.isAuthenticated();
         
         //Then
         assertTrue("The user is authenticated", isAuthenticated);
@@ -68,7 +75,7 @@ public class SpnegoAuthenticationFilterTest {
         when(securityContext.getAuthentication()).thenReturn(auth);
         
         //When
-        boolean isAuthenticated = SpnegoAuthenticationFilter.isAuthenticated();
+        boolean isAuthenticated = filter.isAuthenticated();
         
         //Then
         assertFalse("The user is not authenticated", isAuthenticated);
@@ -80,10 +87,10 @@ public class SpnegoAuthenticationFilterTest {
         String token = "YmFzZSA2NCBpcyB0aGUgYmVzdA==";
         
         //When
-        KerberosServiceRequestToken serviceToken = filter.createToken(token);
+        PreAuthenticatedAuthenticationToken serviceToken = filter.createToken(token);
         
         //Then
-        assertNotNull("NotNull", serviceToken.getToken());
+        assertNotNull("NotNull", serviceToken.getName());
     }
     
     @Test
@@ -93,7 +100,7 @@ public class SpnegoAuthenticationFilterTest {
         request.addHeader("Authorization", "Negotiate blah");
         
         //When
-        boolean isSpnego = isSpnegoRequest(request);
+        boolean isSpnego = filter.isSpnegoRequest(request);
         
         //Then
         assertTrue("excepted to be spnego", isSpnego);
@@ -105,7 +112,7 @@ public class SpnegoAuthenticationFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         
         //When
-        boolean isSpnego = isSpnegoRequest(request);
+        boolean isSpnego = filter.isSpnegoRequest(request);
         
         //Then
         assertFalse("excepted not to be spnego", isSpnego);
@@ -135,13 +142,13 @@ public class SpnegoAuthenticationFilterTest {
         filter.doFilterInternal(request, response, chain);
         
         //Then
-        verify(authenticationManager).authenticate(any(KerberosServiceRequestToken.class));
-        verify(rememberMeServices).loginSuccess(eq(request), eq(response), any(KerberosServiceRequestToken.class));
+        verify(authenticationManager).authenticate(any(PreAuthenticatedAuthenticationToken.class));
+        verify(rememberMeServices).loginSuccess(eq(request), eq(response), any(PreAuthenticatedAuthenticationToken.class));
         verify(chain).doFilter(request, response);
     }
     
     @Test
-    public void checkThatNonSpnegoIsStillFiltered() throws ServletException, IOException {
+    public void checkThatNonSpnegoCausesNegotiate401() throws ServletException, IOException {
         //Given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -151,6 +158,71 @@ public class SpnegoAuthenticationFilterTest {
         filter.doFilterInternal(request, response, chain);
         
         //Then
+        assertEquals("Expected www auth header", response.getHeader("WWW-Authenticate"), "Negotiate");
+        assertEquals("Expected 401 error", response.getStatus(), 401);
+        verify(chain,never()).doFilter(request, response);
+    }
+    
+    @Test
+    public void checkThatCanAuthenticateKerberos() throws UnknownUserException, ServletException, IOException {
+        //Given
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+        request.addHeader("Authorization", "Negotiate NTLMJIBBERISH"); //SpnegoRequest
+        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("cjohn");
+        
+        //When
+        filter.doFilterInternal(request, response, chain);
+        
+        //Then
+        ArgumentCaptor<PreAuthenticatedAuthenticationToken> captor = ArgumentCaptor.forClass(PreAuthenticatedAuthenticationToken.class);
         verify(chain).doFilter(request, response);
+        verify(authenticationManager).authenticate(captor.capture());
+        verify(rememberMeServices).loginSuccess(request, response, captor.getValue());
+        assertEquals("Expected username to be captured in token", captor.getValue().getName(), "cjohn");
+    }
+    
+    @Test
+    public void checkThatInvalidKerberosFailsButContinuesChain() throws UnknownUserException, ServletException, IOException {
+        //Given
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+        request.addHeader("Authorization", "Negotiate NTLMJIBBERISH"); //SpnegoRequest
+        when(ticketValidator.validateTicket(any(byte[].class))).thenThrow(new BadCredentialsException("Invalid username"));
+        
+        //When
+        filter.doFilterInternal(request, response, chain);
+        
+        //Then
+        verify(rememberMeServices).loginFail(request, response);
+        verify(chain).doFilter(request, response);
+    }
+    
+    @Test
+    public void checkThatShouldNotFilterIfMatcherFails() throws ServletException {
+        //Given        
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        when(matcher.matches(request)).thenReturn(false);
+        
+        //When
+        boolean shouldNotFilter = filter.shouldNotFilter(request);
+        
+        //Then
+        assertTrue("Don't filter if matcher fails", shouldNotFilter);
+    }
+    
+    @Test
+    public void checkThatShouldFilterIfMatcherPasses() throws ServletException {
+        //Given        
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        when(matcher.matches(request)).thenReturn(true);
+        
+        //When
+        boolean shouldNotFilter = filter.shouldNotFilter(request);
+        
+        //Then
+        assertFalse("We should filter", shouldNotFilter);
     }
 }
