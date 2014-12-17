@@ -85,13 +85,14 @@ public class SignoutRememberMeServices implements RememberMeServices, LogoutHand
     }
 
     /**
-     * This method simply delegates to the wrapped rememberMeServices login fail
-     * method. It doesn't perform any other specific operation
+     * If an automated attempt to login fails, we can set the signout cookie. 
+     * This will stop further automated attempts to login from occuring
      * @param request
      * @param response 
      */
     @Override
     public void loginFail(HttpServletRequest request, HttpServletResponse response) {
+        cookieGenerator.addCookie(response, signoutValue); //Logged out, add the signout intent cookie
         rememberMeServices.loginFail(request, response);
     }
     

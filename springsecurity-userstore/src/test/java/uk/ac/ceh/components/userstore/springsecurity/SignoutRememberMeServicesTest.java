@@ -132,7 +132,7 @@ public class SignoutRememberMeServicesTest {
     }
     
     @Test
-    public void loginFailDelegatesToRememberMeServices() {
+    public void loginFailSetsSignoutCookieAndDelegatesToRememberMeServices() {
         //Given
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -141,6 +141,7 @@ public class SignoutRememberMeServicesTest {
         signOutServices.loginFail(request, response);
         
         //Then
+        verify(cookieGenerator).addCookie(response, signOutServices.getSignoutValue());
         verify(rememberMeServices).loginFail(request, response);
     }
 }
