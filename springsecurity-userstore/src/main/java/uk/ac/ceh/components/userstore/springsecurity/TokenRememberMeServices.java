@@ -6,6 +6,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.RememberMeServices;
@@ -84,6 +85,9 @@ public class TokenRememberMeServices<U extends User> implements RememberMeServic
             }
             catch (InvalidTokenException | ExpiredTokenException | UnknownUserException ex) {
                 cookieGenerator.removeCookie(response); //failed login. Request a cookie delete
+            }
+            catch(RuntimeException re) {
+                throw new AuthenticationServiceException("Failed to communicate with user/group store", re);
             }
         }
         return null;
