@@ -1,17 +1,25 @@
 package uk.ac.ceh.components.userstore.springsecurity;
 
+import javax.servlet.http.Cookie;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Matchers.any;
 import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import uk.ac.ceh.components.tokengeneration.ExpiredTokenException;
+import uk.ac.ceh.components.tokengeneration.InvalidTokenException;
+import uk.ac.ceh.components.tokengeneration.Token;
 import uk.ac.ceh.components.userstore.GroupStore;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 import uk.ac.ceh.components.userstore.User;
@@ -72,5 +80,18 @@ public class PreAuthenticatedUsernameAuthenticationProviderTest {
         
         //Then
         assertTrue("Expected supports given token", supports);
+    }
+
+    @Test(expected=AuthenticationServiceException.class)
+    public void checkThatUnexpectedUserstoreExceptionThrowsAuthenticationServiceException() throws UnknownUserException, InvalidTokenException, ExpiredTokenException {
+        //Given
+        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken("anyUser", "credentials which are ignored");
+        when(userstore.getUser("anyUser")).thenThrow(new RuntimeException("Userstore is offline"));
+        
+        //When
+        provider.authenticate(token);
+        
+        //Then
+        fail("Expected a service exception");
     }
 }
