@@ -3,6 +3,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 import com.google.common.collect.Collections2;
 import java.util.Objects;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -58,6 +59,9 @@ public class PreAuthenticatedUsernameAuthenticationProvider<U extends User> impl
                     Collections2.transform(groupStore.getGroups(user), new TransformGroupToSimpleGrantedAuthority()));            
         } catch (UnknownUserException ex) {
             throw new UsernameNotFoundException("The supplied username is not present in the user store", ex);
+        }
+        catch(RuntimeException re) {
+            throw new AuthenticationServiceException("Failed to communicate with user/group store", re);
         }
     }
 

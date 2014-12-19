@@ -3,6 +3,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 import com.google.common.collect.Collections2;
 import java.util.Objects;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -55,6 +56,9 @@ public class UsernamePasswordAuthenticationProvider<U extends User> implements A
                         Collections2.transform(groupStore.getGroups(user), new TransformGroupToSimpleGrantedAuthority()));            
             } catch (InvalidCredentialsException ex) {
                 throw new BadCredentialsException("Authentication failed", ex);
+            }
+            catch(RuntimeException re) {
+                throw new AuthenticationServiceException("Failed to communicate with user/group store", re);
             }
         }
         else {
