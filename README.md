@@ -132,7 +132,7 @@ An issue with a system which allows automatic login to occur is that users can n
 
     uk.ac.ceh.components.userstore.springsecurity.SignoutRememberMeServices
 
-The Kerberos extension was based upon work caried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security Kerberos) plugin.
+The Kerberos extension was based upon work carried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security Kerberos) plugin.
 
 # Contributors
 
