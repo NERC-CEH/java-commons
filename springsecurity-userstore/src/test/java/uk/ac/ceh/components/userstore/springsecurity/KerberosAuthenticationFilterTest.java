@@ -171,8 +171,10 @@ public class KerberosAuthenticationFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
+        Authentication succesfulAuthentication = mock(Authentication.class);
         request.addHeader("Authorization", "Negotiate NTLMJIBBERISH"); //SpnegoRequest
         when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("cjohn");
+        when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(succesfulAuthentication);
         
         //When
         filter.doFilterInternal(request, response, chain);
@@ -181,7 +183,7 @@ public class KerberosAuthenticationFilterTest {
         ArgumentCaptor<PreAuthenticatedAuthenticationToken> captor = ArgumentCaptor.forClass(PreAuthenticatedAuthenticationToken.class);
         verify(chain).doFilter(request, response);
         verify(authenticationManager).authenticate(captor.capture());
-        verify(rememberMeServices).loginSuccess(request, response, captor.getValue());
+        verify(rememberMeServices).loginSuccess(request, response, succesfulAuthentication);
         assertEquals("Expected username to be captured in token", captor.getValue().getName(), "cjohn");
     }
     

@@ -46,8 +46,8 @@ public class KerberosAuthenticationFilter extends OncePerRequestFilter {
             String header = request.getHeader("Authorization");
             try {
                 PreAuthenticatedAuthenticationToken token = createToken(header.substring(10));
-                authenticationManager.authenticate(token);
-                rememberMeServices.loginSuccess(request, response, token);
+                Authentication auth = authenticationManager.authenticate(token);
+                rememberMeServices.loginSuccess(request, response, auth);
             }
             catch(AuthenticationException ae) {
                 //Authentication failed. Let the remember me services know and carry on
