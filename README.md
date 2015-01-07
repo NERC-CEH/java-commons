@@ -117,6 +117,23 @@ A component is provided to hook the userstore-api to hook into spring security. 
       }
     }
 
+#### Kerb your enthusiasm
+
+Kerberos is a computer network authentication protocol. If your users are part of an active directory, it is possible to use kerberos so that these users automatically get logged in to your site. Meaning that these users only have to log in to there windows workstation.
+
+In order for this to work a few things will need to be set up:
+
+1. Your application will need a service account set up in active directory. This should be assigned a password which doesn't expire
+2. Two SPNs should be created from this service account in the form of **HTTP/your.domain.name** and **HTTP/your**
+3. A keytab file should be generated off of the **HTTP/your.domain.name** and supplied to the application server configured to automatically sign in with kerberos
+4. A Global Policy will need to be set which adds your web address in to the Intranet Zone. You will also want to set a policy to allow Intranet Zone applications to **Automatic[ly] logon in Intranet Zone**
+
+An issue with a system which allows automatic login to occur is that users can not logout. If you which to allow users to logout and/or log in with different credentials, you will likely want to register:
+
+    uk.ac.ceh.components.userstore.springsecurity.SignoutRememberMeServices
+
+The Kerberos extension was based upon work caried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security-kerberos) plugin.
+
 # Contributors
 
 Christopher Johnson - cjohn@ceh.ac.uk
