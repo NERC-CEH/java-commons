@@ -119,7 +119,7 @@ A component is provided to hook the userstore-api to hook into spring security. 
 
 #### Kerb your enthusiasm
 
-Kerberos is a computer network authentication protocol. If your users are part of an active directory, it is possible to use kerberos so that these users automatically get logged in to your site. Meaning that these users only have to log in to there windows workstation.
+Kerberos is a computer network authentication protocol. If your users are part of an active directory, it is possible to use Kerberos so that these users automatically get logged in to your site. Meaning that these users only have to log in to their windows workstation.
 
 In order for this to work a few things will need to be set up:
 
@@ -132,7 +132,7 @@ An issue with a system which allows automatic login to occur is that users can n
 
     uk.ac.ceh.components.userstore.springsecurity.SignoutRememberMeServices
 
-The Kerberos extension was based upon work caried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security-kerberos) plugin.
+The Kerberos extension was based upon work caried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security Kerberos) plugin.
 
 # Contributors
 
