@@ -75,7 +75,6 @@ public class GSSKerberosTicketValidator implements KerberosTicketValidator {
             context.dispose();
             return user;
         }
-
     }
 
     /**

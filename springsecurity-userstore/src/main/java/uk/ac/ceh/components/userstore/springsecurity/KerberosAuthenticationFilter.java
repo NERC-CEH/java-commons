@@ -38,6 +38,7 @@ public class KerberosAuthenticationFilter extends OncePerRequestFilter {
     private final RequestMatcher matcher;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
     private boolean skipIfAlreadyAuthenticated = true;
+    private boolean stripRealm = true;
     
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -77,7 +78,7 @@ public class KerberosAuthenticationFilter extends OncePerRequestFilter {
     protected PreAuthenticatedAuthenticationToken createToken(String token) throws IOException {
         try {
             byte[] ticket = Base64.decode(token.getBytes("UTF-8"));
-            String username = ticketValidator.validateTicket(ticket);
+            String username = stripRealm(ticketValidator.validateTicket(ticket));
             return new PreAuthenticatedAuthenticationToken(username, ticket);
         }
         catch(IllegalArgumentException iae) {
@@ -96,5 +97,19 @@ public class KerberosAuthenticationFilter extends OncePerRequestFilter {
     protected boolean isAuthenticated() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.isAuthenticated();
+    }
+    
+    /*
+     * Simple method to remove any realm information from a given username if
+     * stripRealm is set to true
+     */
+    private String stripRealm(String username) {
+        int indexOfAt = username.lastIndexOf('@');
+        if(stripRealm && indexOfAt != -1) {
+            return username.substring(0, indexOfAt);
+        }
+        else {
+            return username;
+        }
     }
 }

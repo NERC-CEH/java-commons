@@ -85,6 +85,7 @@ public class KerberosAuthenticationFilterTest {
     public void checkThatCanDecodeToken() throws IOException {
         //Given
         String token = "YmFzZSA2NCBpcyB0aGUgYmVzdA==";
+        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("username@ad");
         
         //When
         PreAuthenticatedAuthenticationToken serviceToken = filter.createToken(token);
@@ -137,6 +138,7 @@ public class KerberosAuthenticationFilterTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
         request.addHeader("Authorization", "Negotiate blah");
+        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("username@ad");
         
         //When
         filter.doFilterInternal(request, response, chain);
@@ -224,5 +226,31 @@ public class KerberosAuthenticationFilterTest {
         
         //Then
         assertFalse("We should filter", shouldNotFilter);
+    }
+    
+    @Test
+    public void checkThatRealmInformationCanBeStrippedFromUsername() throws IOException {
+        //Given
+        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("someone@some.realm");
+        filter.setStripRealm(true);
+        
+        //When
+        PreAuthenticatedAuthenticationToken serviceToken = filter.createToken("");
+        
+        //Then
+        assertEquals("Expected realm to be stripped", serviceToken.getPrincipal(), "someone");
+    }
+        
+    @Test
+    public void checkThatRealmInformationCanBeLeftInPlaceFromUsername() throws IOException {
+        //Given
+        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("someone@some.realm");
+        filter.setStripRealm(false);
+        
+        //When
+        PreAuthenticatedAuthenticationToken serviceToken = filter.createToken("");
+        
+        //Then
+        assertEquals("Expected realm to be left in place", serviceToken.getPrincipal(), "someone@some.realm");
     }
 }
