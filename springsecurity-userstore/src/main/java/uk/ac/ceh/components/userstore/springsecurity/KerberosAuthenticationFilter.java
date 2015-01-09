@@ -47,6 +47,7 @@ public class KerberosAuthenticationFilter extends OncePerRequestFilter {
             try {
                 PreAuthenticatedAuthenticationToken token = createToken(header.substring(10));
                 Authentication auth = authenticationManager.authenticate(token);
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 rememberMeServices.loginSuccess(request, response, auth);
             }
             catch(AuthenticationException ae) {
