@@ -1,6 +1,9 @@
 package uk.ac.ceh.components.userstore.springsecurity;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import static org.junit.Assert.assertEquals;
@@ -38,19 +41,25 @@ public class KerberosAuthenticationFilterTest {
     @Mock(answer=RETURNS_DEEP_STUBS) SecurityContext securityContext;
     
     KerberosAuthenticationFilter filter;
+    MockHttpServletRequest request;
     
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        filter = new KerberosAuthenticationFilter(authenticationManager, ticketValidator);
+        filter = new KerberosAuthenticationFilter(authenticationManager);
         filter.setRememberMeServices(rememberMeServices);
+        
+        //Set the default validators operating domain name and attach this the the default request
+        when(ticketValidator.getServicePrincipalDomain()).thenReturn("default");
+        filter.addTicketValidator(ticketValidator);
+        request = new MockHttpServletRequest();
+        request.setServerName("default");
     }
     
     @Test
     public void checkThatSpnegoCausesAuthenticationAndIsRemembered() throws ServletException, IOException {
         //Given
-        MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
         request.addHeader("Authorization", "Negotiate blah");
@@ -68,7 +77,6 @@ public class KerberosAuthenticationFilterTest {
     @Test
     public void checkThatNonSpnegoCausesNegotiate401() throws ServletException, IOException {
         //Given
-        MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
         
@@ -84,7 +92,6 @@ public class KerberosAuthenticationFilterTest {
     @Test
     public void checkThatCanAuthenticateKerberos() throws UnknownUserException, ServletException, IOException {
         //Given
-        MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
         Authentication succesfulAuthentication = mock(Authentication.class);
@@ -107,7 +114,6 @@ public class KerberosAuthenticationFilterTest {
     @Test
     public void checkThatInvalidKerberosFailsButContinuesChain() throws UnknownUserException, ServletException, IOException {
         //Given
-        MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         FilterChain chain = mock(FilterChain.class);
         request.addHeader("Authorization", "Negotiate NTLMJIBBERISH"); //SpnegoRequest
@@ -118,6 +124,48 @@ public class KerberosAuthenticationFilterTest {
         
         //Then
         verify(rememberMeServices).loginFail(request, response);
+        verify(chain).doFilter(request, response);
+    }
+    
+    @Test
+    public void checkThatCanPickTheCorrectTicketValidator() throws Exception {
+        //Given
+        request.addHeader("Authorization", "Negotiate NTLMJIBBERISH"); //SpnegoRequest
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+        
+        KerberosTicketValidator validator1 = mock(KerberosTicketValidator.class);
+        KerberosTicketValidator validator2 = mock(KerberosTicketValidator.class);
+        when(validator1.getServicePrincipalDomain()).thenReturn("domain.one");
+        when(validator2.getServicePrincipalDomain()).thenReturn("domain.two");
+        when(validator2.validateTicket(any(byte[].class))).thenReturn("username");
+        
+        request.setServerName("domain.two");
+        
+        filter.getTicketValidators().clear();
+        filter.addTicketValidator(validator1);
+        filter.addTicketValidator(validator2);
+        
+        //When
+        filter.doFilterInternal(request, response, chain);
+        
+        //Then
+        verify(validator2).validateTicket(any(byte[].class));
+    }
+    
+    @Test
+    public void checkThatUnsupportedDomainContinuesChain() throws UnknownUserException, ServletException, IOException {
+        //Given
+        request.setServerName("Somewhere.else");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+        request.addHeader("Authorization", "Negotiate NTLMJIBBERISH"); //SpnegoRequest
+        when(ticketValidator.validateTicket(any(byte[].class))).thenThrow(new BadCredentialsException("Invalid username"));
+        
+        //When
+        filter.doFilterInternal(request, response, chain);
+        
+        //Then
         verify(chain).doFilter(request, response);
     }
 }
