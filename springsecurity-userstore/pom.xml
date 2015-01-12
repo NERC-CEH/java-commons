@@ -58,6 +58,13 @@
             <version>${guava.version}</version>
         </dependency>
         
+        <!-- NTLM specific code, this must be added by projects which require it -->
+        <dependency>
+            <groupId>ch.poweredge.ntlmv2-auth</groupId>
+            <artifactId>ntlmv2-lib</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+        
         <!-- Servlet dependecies -->
         <dependency>
             <groupId>org.apache.tomcat</groupId>
