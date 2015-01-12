@@ -8,7 +8,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 
 /**
  * The following is a convenience class which can be used to make spring security
- * respond with an unauthorised status code rather than automatically redirecting
+ * respond with an unauthorized status code rather than automatically redirecting
  * to the login page. This is useful for creating restful web services which are 
  * secured with spring security.
  * @author cjohn

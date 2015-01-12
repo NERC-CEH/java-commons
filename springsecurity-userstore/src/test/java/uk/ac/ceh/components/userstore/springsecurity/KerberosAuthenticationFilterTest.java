@@ -4,10 +4,6 @@ import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -29,7 +25,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import uk.ac.ceh.components.userstore.UnknownUserException;
 
 /**
@@ -40,7 +35,6 @@ public class KerberosAuthenticationFilterTest {
     @Mock AuthenticationManager authenticationManager;
     @Mock KerberosTicketValidator ticketValidator;
     @Mock RememberMeServices rememberMeServices;
-    @Mock RequestMatcher matcher;
     @Mock(answer=RETURNS_DEEP_STUBS) SecurityContext securityContext;
     
     KerberosAuthenticationFilter filter;
@@ -49,86 +43,8 @@ public class KerberosAuthenticationFilterTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        filter = new KerberosAuthenticationFilter(authenticationManager, ticketValidator, matcher);
+        filter = new KerberosAuthenticationFilter(authenticationManager, ticketValidator);
         filter.setRememberMeServices(rememberMeServices);
-    }
-    
-    @Test
-    public void checkThatCanDecideIfAuthenticated() {
-        //Given
-        Authentication auth = mock(Authentication.class);
-        when(auth.isAuthenticated()).thenReturn(true);
-        when(securityContext.getAuthentication()).thenReturn(auth);
-        
-        //When
-        boolean isAuthenticated = filter.isAuthenticated();
-        
-        //Then
-        assertTrue("The user is authenticated", isAuthenticated);
-    }
-    
-    @Test
-    public void checkThatCanDecideIfIsntAuthenticated() {
-        //Given
-        Authentication auth = mock(Authentication.class);
-        when(auth.isAuthenticated()).thenReturn(false);
-        when(securityContext.getAuthentication()).thenReturn(auth);
-        
-        //When
-        boolean isAuthenticated = filter.isAuthenticated();
-        
-        //Then
-        assertFalse("The user is not authenticated", isAuthenticated);
-    }
-    
-    @Test
-    public void checkThatCanDecodeToken() throws IOException {
-        //Given
-        String token = "YmFzZSA2NCBpcyB0aGUgYmVzdA==";
-        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("username@ad");
-        
-        //When
-        PreAuthenticatedAuthenticationToken serviceToken = filter.createToken(token);
-        
-        //Then
-        assertNotNull("NotNull", serviceToken.getName());
-    }
-    
-    @Test
-    public void checkThatSpnegoRequestIsDetected() {
-        //Given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Negotiate blah");
-        
-        //When
-        boolean isSpnego = filter.isSpnegoRequest(request);
-        
-        //Then
-        assertTrue("excepted to be spnego", isSpnego);
-    }
-    
-    @Test
-    public void checkThatNonSpnegoRequestIsNotDetected() {
-         //Given
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        
-        //When
-        boolean isSpnego = filter.isSpnegoRequest(request);
-        
-        //Then
-        assertFalse("excepted not to be spnego", isSpnego);
-    }
-    
-    @Test(expected=BadCredentialsException.class)
-    public void checkThatGibberishCausesException() throws IOException {
-        //Given
-        String token = "in****Token";
-        
-        //When
-        filter.createToken(token);
-        
-        //Then
-        fail("Expected to get exception");        
     }
     
     @Test
@@ -184,6 +100,7 @@ public class KerberosAuthenticationFilterTest {
         verify(chain).doFilter(request, response);
         verify(authenticationManager).authenticate(captor.capture());
         verify(rememberMeServices).loginSuccess(request, response, succesfulAuthentication);
+        verify(securityContext).setAuthentication(succesfulAuthentication);
         assertEquals("Expected username to be captured in token", captor.getValue().getName(), "cjohn");
     }
     
@@ -202,57 +119,5 @@ public class KerberosAuthenticationFilterTest {
         //Then
         verify(rememberMeServices).loginFail(request, response);
         verify(chain).doFilter(request, response);
-    }
-    
-    @Test
-    public void checkThatShouldNotFilterIfMatcherFails() throws ServletException {
-        //Given        
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        when(matcher.matches(request)).thenReturn(false);
-        
-        //When
-        boolean shouldNotFilter = filter.shouldNotFilter(request);
-        
-        //Then
-        assertTrue("Don't filter if matcher fails", shouldNotFilter);
-    }
-    
-    @Test
-    public void checkThatShouldFilterIfMatcherPasses() throws ServletException {
-        //Given        
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        when(matcher.matches(request)).thenReturn(true);
-        
-        //When
-        boolean shouldNotFilter = filter.shouldNotFilter(request);
-        
-        //Then
-        assertFalse("We should filter", shouldNotFilter);
-    }
-    
-    @Test
-    public void checkThatRealmInformationCanBeStrippedFromUsername() throws IOException {
-        //Given
-        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("someone@some.realm");
-        filter.setStripRealm(true);
-        
-        //When
-        PreAuthenticatedAuthenticationToken serviceToken = filter.createToken("");
-        
-        //Then
-        assertEquals("Expected realm to be stripped", serviceToken.getPrincipal(), "someone");
-    }
-        
-    @Test
-    public void checkThatRealmInformationCanBeLeftInPlaceFromUsername() throws IOException {
-        //Given
-        when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("someone@some.realm");
-        filter.setStripRealm(false);
-        
-        //When
-        PreAuthenticatedAuthenticationToken serviceToken = filter.createToken("");
-        
-        //Then
-        assertEquals("Expected realm to be left in place", serviceToken.getPrincipal(), "someone@some.realm");
     }
 }

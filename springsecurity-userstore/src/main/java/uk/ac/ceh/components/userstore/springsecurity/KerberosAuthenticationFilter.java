@@ -8,16 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.web.authentication.NullRememberMeServices;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * 
@@ -31,73 +27,44 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * @author cjohn
  */
 @Data
-@EqualsAndHashCode(callSuper=false)
-public class KerberosAuthenticationFilter extends OncePerRequestFilter {
+@EqualsAndHashCode(callSuper=true)
+public class KerberosAuthenticationFilter extends AbstractSpnegoAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final KerberosTicketValidator ticketValidator;
-    private final RequestMatcher matcher;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
-    private boolean skipIfAlreadyAuthenticated = true;
     private boolean stripRealm = true;
     
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(isSpnegoRequest(request)) {
-            String header = request.getHeader("Authorization");
-            try {
-                PreAuthenticatedAuthenticationToken token = createToken(header.substring(10));
-                Authentication auth = authenticationManager.authenticate(token);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                rememberMeServices.loginSuccess(request, response, auth);
-            }
-            catch(AuthenticationException ae) {
-                //Authentication failed. Let the remember me services know and carry on
-                rememberMeServices.loginFail(request, response);
-            }
-            
-            filterChain.doFilter(request, response);
-        }
-        else {
-            response.addHeader("WWW-Authenticate", "Negotiate");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        }
+    protected boolean isAuthenticatable(Authorization authorization) {
+        return authorization.getMechanism().equals("Negotiate");
     }
-    
+
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return (skipIfAlreadyAuthenticated && isAuthenticated()) || !matcher.matches(request);
+    protected void doAuthentication(Authorization authorization, HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            PreAuthenticatedAuthenticationToken token = createToken(authorization.getToken());
+            Authentication auth = authenticationManager.authenticate(token);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            rememberMeServices.loginSuccess(request, response, auth);
+        }
+        catch(AuthenticationException ae) {
+            //Authentication failed. Let the remember me services know and carry on
+            SecurityContextHolder.getContext().setAuthentication(null);
+            rememberMeServices.loginFail(request, response);
+        }
+
+        filterChain.doFilter(request, response);
     }
     
     /**
-     * Given a Token represented as Base64, decode it, validate it and return a 
-     * PreAuthenticatedAuthenticationToken
-     * @param token
-     * @return A KerberosServiceRequestToken
-     * @throws java.io.IOException if UTF-8 is not supported (This shouldn't happen
-     *  as UTF-8 is a JVM requirement
+     * Validate the given a Token and return a PreAuthenticatedAuthenticationToken
+     * representation
+     * @param token the token from the Authorization header
+     * @return A PreAuthenticatedAuthenticationToken
      */
-    protected PreAuthenticatedAuthenticationToken createToken(String token) throws IOException {
-        try {
-            byte[] ticket = Base64.decode(token.getBytes("UTF-8"));
-            String username = stripRealm(ticketValidator.validateTicket(ticket));
-            return new PreAuthenticatedAuthenticationToken(username, ticket);
-        }
-        catch(IllegalArgumentException iae) {
-            throw new BadCredentialsException("Failed to decode kerberos authentication ticket");
-        }
-    }
-    
-    /*
-     * Simple method to check if the given request represents a Spenego request 
-     */
-    protected boolean isSpnegoRequest(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        return header != null && header.startsWith("Negotiate ");
-    }
-    
-    protected boolean isAuthenticated() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.isAuthenticated();
+    private PreAuthenticatedAuthenticationToken createToken(byte[] token) {
+        String username = stripRealm(ticketValidator.validateTicket(token));
+        return new PreAuthenticatedAuthenticationToken(username, token);
     }
     
     /*

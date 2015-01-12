@@ -132,7 +132,53 @@ An issue with a system which allows automatic login to occur is that users can n
 
     uk.ac.ceh.components.userstore.springsecurity.SignoutRememberMeServices
 
-The Kerberos extension was based upon work carried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security Kerberos) plugin.
+The Kerberos extension was based upon work carried out in the [spring-security-kerberos](https://github.com/spring-projects/spring-security-kerberos) plugin.
+
+#### Integrating with NTLMv2
+
+NTLM is a proprietary authentication protocol used by Microsoft Windows. When using the *Negotiate* WWW-Authentication header the NTLM mechanism will be used in the event that the Kerberos protocol fails. Such an event can occur if the client workstation cannot communicate with the Key Distribution Center (e.g. Active Directory).
+
+Since Microsoft recommend the use of Kerberos over NTLM, we have decided to exclude the Maven dependencies required to set up NTLM Authentication. These must be manually added to your project where required.
+      
+    <dependency>
+      <groupId>ch.poweredge.ntlmv2-auth</groupId>
+      <artifactId>ntlmv2-lib</artifactId>
+      <version>1.0.5</version>
+    </dependency>
+  
+
+In order to use NTLMv2 Authentication, you must be able to set up a Computer account in active directory and set a password. The Windows UI does not provide a method to do this so you will have to use something similar to the following script:
+
+    'SetComputerPass.vbs (Obtained from https://www.liferay.com)
+    Option Explicit
+
+    Dim strDn, objPassword, strPassword, objComputer
+
+    If WScript.arguments.count <> 1 Then
+      WScript.Echo "Usage: SetComputerPass.vbs <ComputerDN>"
+      WScript.Quit
+    End If
+
+    strDn = WScript.arguments.item(0)
+
+    Set objPassword = CreateObject("ScriptPW.Password")
+    WScript.StdOut.Write "Password:"
+    strPassword = objPassword.GetPassword()
+
+    Set objComputer = GetObject("LDAP://" & strDn)
+    objComputer.SetPassword strPassword
+
+    WScript.Quit
+
+After you have a computer account in AD, you should be able to instantiate an NTLMManager and a NtlmAuthenticationFilter.
+    
+    # Note that the $ in the computer account is important
+    NtlmManager ntlmManager = new NtlmManager("DOMAIN", "address.of.ad", "AD_LOCAL_NAME", "COMPUTER$@DOMAIN", "password");
+    NtlmAuthenticationFilter filter = new NtlmAuthenticationFilter(authenticationManager(),ntlmManager);
+
+**If you wish to use the Kerberos and the NTLM mechanisms in the same application, you will need to register the NTLM filter before the Kerberos one**
+
+For a detailed discussion on the different messages which are passed around when using NTLM see [here](http://www.innovation.ch/personal/ronald/ntlm.html)
 
 # Contributors
 
