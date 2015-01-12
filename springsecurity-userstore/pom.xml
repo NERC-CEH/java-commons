@@ -63,6 +63,7 @@
             <groupId>ch.poweredge.ntlmv2-auth</groupId>
             <artifactId>ntlmv2-lib</artifactId>
             <version>1.0.5</version>
+            <scope>provided</scope>
         </dependency>
         
         <!-- Servlet dependecies -->
