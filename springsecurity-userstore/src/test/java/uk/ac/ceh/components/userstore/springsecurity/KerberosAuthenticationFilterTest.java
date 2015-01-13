@@ -3,6 +3,7 @@ package uk.ac.ceh.components.userstore.springsecurity;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import uk.ac.ceh.components.userstore.UnknownUserException;
  */
 public class KerberosAuthenticationFilterTest {
     @Mock AuthenticationManager authenticationManager;
+    @Mock KerberosTicketValidatorSelector validatorSelector;
     @Mock KerberosTicketValidator ticketValidator;
     @Mock RememberMeServices rememberMeServices;
     @Mock(answer=RETURNS_DEEP_STUBS) SecurityContext securityContext;
@@ -43,8 +45,9 @@ public class KerberosAuthenticationFilterTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        filter = new KerberosAuthenticationFilter(authenticationManager, ticketValidator);
+        filter = new KerberosAuthenticationFilter(authenticationManager, validatorSelector);
         filter.setRememberMeServices(rememberMeServices);
+        when(validatorSelector.selectValidator(any(HttpServletRequest.class))).thenReturn(ticketValidator);
     }
     
     @Test

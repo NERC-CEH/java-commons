@@ -30,10 +30,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 @EqualsAndHashCode(callSuper=true)
 public class KerberosAuthenticationFilter extends AbstractSpnegoAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
-    private final KerberosTicketValidator ticketValidator;
+    private final KerberosTicketValidatorSelector validatorSelector;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
     private boolean stripRealm = true;
-    
+        
     @Override
     protected boolean isAuthenticatable(Authorization authorization) {
         return authorization.getMechanism().equals("Negotiate");
@@ -41,29 +41,33 @@ public class KerberosAuthenticationFilter extends AbstractSpnegoAuthenticationFi
 
     @Override
     protected void doAuthentication(Authorization authorization, HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try {
-            PreAuthenticatedAuthenticationToken token = createToken(authorization.getToken());
-            Authentication auth = authenticationManager.authenticate(token);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            rememberMeServices.loginSuccess(request, response, auth);
+        KerberosTicketValidator validator = validatorSelector.selectValidator(request);
+        if(validator != null) {
+            try {
+                PreAuthenticatedAuthenticationToken token = createToken(validator, authorization.getToken());
+                Authentication auth = authenticationManager.authenticate(token);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                rememberMeServices.loginSuccess(request, response, auth);
+            }
+            catch(AuthenticationException ae) {
+                //Authentication failed. Let the remember me services know and carry on
+                SecurityContextHolder.getContext().setAuthentication(null);
+                rememberMeServices.loginFail(request, response);
+            }
         }
-        catch(AuthenticationException ae) {
-            //Authentication failed. Let the remember me services know and carry on
-            SecurityContextHolder.getContext().setAuthentication(null);
-            rememberMeServices.loginFail(request, response);
-        }
-
+        
         filterChain.doFilter(request, response);
     }
     
     /**
      * Validate the given a Token and return a PreAuthenticatedAuthenticationToken
      * representation
+     * @param validator the validator to use to create a token from
      * @param token the token from the Authorization header
      * @return A PreAuthenticatedAuthenticationToken
      */
-    private PreAuthenticatedAuthenticationToken createToken(byte[] token) {
-        String username = stripRealm(ticketValidator.validateTicket(token));
+    private PreAuthenticatedAuthenticationToken createToken(KerberosTicketValidator validator, byte[] token) {
+        String username = stripRealm(validator.validateTicket(token));
         return new PreAuthenticatedAuthenticationToken(username, token);
     }
     

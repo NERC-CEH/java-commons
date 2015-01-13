@@ -33,6 +33,7 @@ import org.springframework.security.authentication.BadCredentialsException;
  */
 public class GSSKerberosTicketValidator implements KerberosTicketValidator {
     private final Subject serviceSubject;
+    private final String servicePrincipalDomain;
     
     public GSSKerberosTicketValidator(File keytab, String servicePrincipal) throws LoginException {
         LoginConfig loginConfig = new LoginConfig(keytab, servicePrincipal);
@@ -42,6 +43,7 @@ public class GSSKerberosTicketValidator implements KerberosTicketValidator {
         LoginContext lc = new LoginContext("", sub, null, loginConfig);
         lc.login();
         this.serviceSubject = lc.getSubject();
+        this.servicePrincipalDomain = getServicePrincipalDomain(servicePrincipal);
     }
     
     @Override
@@ -50,6 +52,22 @@ public class GSSKerberosTicketValidator implements KerberosTicketValidator {
             return Subject.doAs(this.serviceSubject, new KerberosValidateAction(token));
         } catch (PrivilegedActionException e) {
             throw new BadCredentialsException("Kerberos validation not successful", e);
+        }
+    }
+    
+    @Override
+    public String getServicePrincipalHostname() {
+        return servicePrincipalDomain;
+    }
+    
+    private static String getServicePrincipalDomain(String servicePrincipal) {
+        int slash = servicePrincipal.indexOf('/');
+        int at = servicePrincipal.indexOf('@');
+        if(slash != -1 && at != -1 && slash < at) {
+            return servicePrincipal.substring(slash+1, at);
+        }
+        else {
+            throw new IllegalArgumentException("The service principal is not in the form 'HTTP/some.domain@AD.DOMAIN");
         }
     }
     
