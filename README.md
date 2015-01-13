@@ -124,7 +124,7 @@ Kerberos is a computer network authentication protocol. If your users are part o
 In order for this to work a few things will need to be set up:
 
 1. Your application will need a service account set up in active directory. This should be assigned a password which doesn't expire
-2. Two SPNs should be created from this service account in the form of **HTTP/your.domain.name** and **HTTP/your**
+2. An SPN from this service account in the form of **HTTP/your.domain.name**
 3. A keytab file should be generated off of the **HTTP/your.domain.name** and supplied to the application server configured to automatically sign in with kerberos
 4. A Global Policy will need to be set which adds your web address in to the Intranet Zone. You will also want to set a policy to allow Intranet Zone applications to **Automatic[ly] logon in Intranet Zone**
 
@@ -138,7 +138,7 @@ The Kerberos extension was based upon work carried out in the [spring-security-k
 
 NTLM is a proprietary authentication protocol used by Microsoft Windows. When using the *Negotiate* WWW-Authentication header the NTLM mechanism will be used in the event that the Kerberos protocol fails. Such an event can occur if the client workstation cannot communicate with the Key Distribution Center (e.g. Active Directory).
 
-Since Microsoft recommend the use of Kerberos over NTLM, we have decided to exclude the Maven dependencies required to set up NTLM Authentication. These must be manually added to your project where required.
+Since Microsoft recommends the use of Kerberos over NTLM, we have decided to exclude the Maven dependencies required to set up NTLM Authentication. These must be manually added to your project where required.
       
     <dependency>
       <groupId>ch.poweredge.ntlmv2-auth</groupId>

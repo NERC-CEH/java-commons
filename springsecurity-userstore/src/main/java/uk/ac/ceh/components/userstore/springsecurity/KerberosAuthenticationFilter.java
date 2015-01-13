@@ -1,8 +1,6 @@
 package uk.ac.ceh.components.userstore.springsecurity;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +30,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 @EqualsAndHashCode(callSuper=true)
 public class KerberosAuthenticationFilter extends AbstractSpnegoAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
-    protected Map<String, KerberosTicketValidator> ticketValidators = new HashMap<>();
+    private final KerberosTicketValidatorSelector validatorSelector;
     private RememberMeServices rememberMeServices = new NullRememberMeServices();
     private boolean stripRealm = true;
         
@@ -43,7 +41,7 @@ public class KerberosAuthenticationFilter extends AbstractSpnegoAuthenticationFi
 
     @Override
     protected void doAuthentication(Authorization authorization, HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        KerberosTicketValidator validator = ticketValidators.get(request.getServerName().toLowerCase());
+        KerberosTicketValidator validator = validatorSelector.selectValidator(request);
         if(validator != null) {
             try {
                 PreAuthenticatedAuthenticationToken token = createToken(validator, authorization.getToken());
@@ -59,15 +57,6 @@ public class KerberosAuthenticationFilter extends AbstractSpnegoAuthenticationFi
         }
         
         filterChain.doFilter(request, response);
-    }
-    
-    /**
-     * Method to add a ticket validator to this KerberosAuthenticationFilter. 
-     * This lets multiple domains be handled by the same filter
-     * @param validator to add
-     */
-    public void addTicketValidator(KerberosTicketValidator validator) {
-        ticketValidators.put(validator.getServicePrincipalDomain().toLowerCase(), validator);
     }
     
     /**

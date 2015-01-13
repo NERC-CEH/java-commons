@@ -20,5 +20,5 @@ public interface KerberosTicketValidator {
      * work with
      * @return the domain name this validator works on
      */
-    String getServicePrincipalDomain();
+    String getServicePrincipalHostname();
 }

@@ -56,7 +56,7 @@ public class GSSKerberosTicketValidator implements KerberosTicketValidator {
     }
     
     @Override
-    public String getServicePrincipalDomain() {
+    public String getServicePrincipalHostname() {
         return servicePrincipalDomain;
     }
     

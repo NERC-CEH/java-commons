@@ -17,7 +17,7 @@ public class GSSKerberosTicketValidatorTest {
         GSSKerberosTicketValidator validator = new GSSKerberosTicketValidator(new File("toSomething"), spn);
         
         //When
-        String servicePrincipalDomain = validator.getServicePrincipalDomain();
+        String servicePrincipalDomain = validator.getServicePrincipalHostname();
         
         //Then
         assertEquals("Expected the supplied domain", "somewhere.i.want", servicePrincipalDomain);
