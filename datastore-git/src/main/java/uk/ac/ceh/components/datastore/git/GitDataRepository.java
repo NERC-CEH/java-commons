@@ -125,10 +125,16 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
     @Override
     public DataRevision<A> getLatestRevision() throws DataRepositoryException {
         try {
-            RevWalk revWalk = new RevWalk(repository);
-            RevCommit commit = revWalk.parseCommit(resolveRevision(Constants.HEAD));
-            A author = getAuthor(commit.getAuthorIdent());
-            return new GitDataRevision<>(author, commit);
+            ObjectId revision = resolveRevision(Constants.HEAD);
+            if(revision != null) {
+                RevWalk revWalk = new RevWalk(repository);
+                RevCommit commit = revWalk.parseCommit(revision);
+                A author = getAuthor(commit.getAuthorIdent());
+                return new GitDataRevision<>(author, commit);
+            }
+            else {
+                return null;
+            }
         } catch (DataRepositoryException ex) {
             throw ex;   
         } catch (UnknownUserException | IOException ex) {

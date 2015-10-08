@@ -458,6 +458,18 @@ public class GitDataRepositoryTest {
         assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
     }
     
+    @Test
+    public void bareRepositoryReturnsNullLatestRevision() throws DataRepositoryException {
+        //Given
+        //Empty Repository
+        
+        //When
+        DataRevision<GitTestUser> latestRevision = dataStore.getLatestRevision();
+        
+        //Then
+        assertNull("Expected latestRevision to be null", latestRevision);
+    }
+    
     @After
     public void closeRepository() throws IOException {
         dataStore.close();
