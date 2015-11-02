@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>uk.ac.ceh.components</groupId>
     <artifactId>components-parent</artifactId>
-    <version>1.0.40-SNAPSHOT</version>
+    <version>1.0.40</version>
     <packaging>pom</packaging>
     <name>CEH Java Commons</name>
     <description>A suite of common java components used for CEH applications</description>
@@ -26,7 +26,7 @@
         <connection>scm:git:http://github.com/NERC-CEH/java-commons.git</connection>
         <url>http://github.com/NERC-CEH/dynamo-mapping.git</url>
         <developerConnection>scm:git:https://github.com/NERC-CEH/java-commons.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>components-parent-1.0.40</tag>
     </scm>
   
     <developers>
