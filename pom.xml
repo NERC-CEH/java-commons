@@ -38,20 +38,22 @@
         </developer>
     </developers>
 
-    <profile>
-      <id>ceh-nexus</id>
-      <distributionManagement>
-          <repository>
-              <id>ceh-releases-nexus</id>
-              <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/releases</url>
-          </repository>
-          <snapshotRepository>
-              <uniqueVersion>true</uniqueVersion>
-              <id>ceh-snapshots-nexus</id>
-              <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/snapshots</url>
-          </snapshotRepository>
-      </distributionManagement>
-    </profile>
+    <profiles>
+        <profile>
+            <id>ceh-nexus</id>
+            <distributionManagement>
+              <repository>
+                    <id>ceh-releases-nexus</id>
+                    <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/releases</url>
+              </repository>
+              <snapshotRepository>
+                    <uniqueVersion>true</uniqueVersion>
+                    <id>ceh-snapshots-nexus</id>
+                    <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    </profiles>
     
     <properties>
         <guava.version>14.0.1</guava.version>
