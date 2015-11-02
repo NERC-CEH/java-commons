@@ -1,14 +1,42 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>9</version>
+    </parent>
+
     <modelVersion>4.0.0</modelVersion>
-	
     <groupId>uk.ac.ceh.components</groupId>
     <artifactId>components-parent</artifactId>
     <version>1.0.36-SNAPSHOT</version>
-
     <packaging>pom</packaging>
+    <name>CEH Java Commons</name>
+    <description>A suite of common java components used for CEH applications</description>
+    <url>https://github.com/NERC-CEH/java-commons</url>
 
-    <name>${project.artifactId}-${project.version}</name>
+    <licenses>
+        <license>
+            <name>GNU General Public License, version 2</name>
+            <url>http://www.gnu.org/licenses/gpl-2.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:http://github.com/NERC-CEH/java-commons.git</connection>
+        <url>http://github.com/NERC-CEH/dynamo-mapping.git</url>
+        <developerConnection>scm:git:https://github.com/NERC-CEH/java-commons.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+  
+    <developers>
+        <developer>
+            <name>Christopher Johnson</name>
+            <email>cjohn@ceh.ac.uk</email>
+            <organization>Centre for Ecology &amp; Hydrology</organization>
+            <organizationUrl>http://www.ceh.ac.uk/</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <guava.version>14.0.1</guava.version>
@@ -34,10 +62,6 @@
         <module>jaas-userstore-crowd</module>
     </modules>
 	
-    <scm>
-        <connection>scm:git:https://github.com/NERC-CEH/java-commons.git</connection>
-   <tag>HEAD</tag>
-         </scm>
     <build>
         <pluginManagement>
             <plugins>
@@ -58,19 +82,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-<!--            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -115,16 +126,5 @@
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <repository>
-            <id>ceh-releases-nexus</id>
-            <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <uniqueVersion>true</uniqueVersion>
-            <id>ceh-snapshots-nexus</id>
-            <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/snapshots</url>
-        </snapshotRepository>
-  </distributionManagement>
 </project>
 
