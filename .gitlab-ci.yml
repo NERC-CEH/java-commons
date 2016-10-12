@@ -12,6 +12,7 @@ build:
 
 deploy:
   stage: deploy
+  image: maven:3.2-jdk-7
   script:
     - release:prepare release:perform -B -Dusername=$GITLAB_USERNAME -Dpassword=$GITLAB_PASSWORD -Pgpg
   when: manual
