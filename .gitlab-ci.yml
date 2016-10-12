@@ -10,3 +10,8 @@ build:
   script: 
     - mvn clean install
 
+deploy:
+  stage: deploy
+  script:
+    - release:prepare release:perform -B -Dusername=$GITLAB_USERNAME -Dpassword=$GITLAB_PASSWORD -Pgpg
+  when: manual

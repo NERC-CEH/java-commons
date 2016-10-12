@@ -23,9 +23,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:http://github.com/NERC-CEH/java-commons.git</connection>
-        <url>http://github.com/NERC-CEH/dynamo-mapping.git</url>
-        <developerConnection>scm:git:https://github.com/NERC-CEH/java-commons.git</developerConnection>
+        <connection>scm:git:http://gitlab.ceh.ac.uk/commons/java-commons.git</connection>
+        <url>http://gitlab.ceh.ac.uk/commons/java-commons.git</url>
+        <developerConnection>scm:git:https://gitlab.ceh.ac.uk/commons/java-commons.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
   
@@ -38,23 +38,6 @@
         </developer>
     </developers>
 
-    <profiles>
-        <profile>
-            <id>ceh-nexus</id>
-            <distributionManagement>
-              <repository>
-                    <id>ceh-releases-nexus</id>
-                    <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/releases</url>
-              </repository>
-              <snapshotRepository>
-                    <uniqueVersion>true</uniqueVersion>
-                    <id>ceh-snapshots-nexus</id>
-                    <url>http://nexus.nerc-lancaster.ac.uk/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-    </profiles>
-    
     <properties>
         <guava.version>14.0.1</guava.version>
         <jackson.version>2.2.0</jackson.version>
