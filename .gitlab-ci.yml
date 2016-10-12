@@ -14,5 +14,8 @@ deploy:
   stage: deploy
   image: maven:3.2-jdk-7
   script:
-    - release:prepare release:perform -B -Dusername=$GITLAB_USERNAME -Dpassword=$GITLAB_PASSWORD -Pgpg
+    - mkdir /root/.gnupg
+    - base64 -d <<< $SECRING_GPG_64 > /root/.gnupg/secring.gpg
+    - base64 -d <<< $PUBRING_GPG_64 > /root/.gnupg/pubring.gpg
+    - release:prepare release:perform -B -Dusername=$GITLAB_USERNAME -Dpassword=$GITLAB_PASSWORD -Dgpg.passphrase=$GPG_PASS
   when: manual
