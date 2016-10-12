@@ -8,5 +8,5 @@ build:
   stage: build
   image: maven:3.2-jdk-7
   script: 
-    - mvn clean build
+    - mvn clean install
 
