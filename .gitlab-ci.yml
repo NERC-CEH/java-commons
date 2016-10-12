@@ -1,3 +1,9 @@
+mirror:
+  stage: build
+  image: buildpack-deps:xenial-scm
+  script:
+    - git push -q --prune https://$GITHUB_USERNAME:$GITHUB_PASSWORD@github.com/NERC-CEH/java-commons.git +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*
+
 build:
   stage: build
   image: maven:3.2-jdk-7
