@@ -14,6 +14,8 @@ deploy:
   stage: deploy
   image: maven:3.3.9-jdk-7
   script:
+    - git config user.email "oss@ceh.ac.uk"
+    - git config user.name "Open Source Software"
     - mkdir /root/.gnupg
     - base64 -d <<< $SECRING_GPG_64 > /root/.gnupg/secring.gpg
     - base64 -d <<< $PUBRING_GPG_64 > /root/.gnupg/pubring.gpg
