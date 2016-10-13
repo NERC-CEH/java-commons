@@ -72,7 +72,10 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
             default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
-
+    
+    @Caching(evict={
+      @CacheEvict(value="users", key="#user.name")
+    })
     @Override
     public void updateUser(U user) throws UnknownUserException {
         CrowdUser newUser = reader.apply(user); //Build a crowd user from the given user
@@ -89,7 +92,12 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
             default: throw new CrowdRestException(crowdResponse.getEntity(CrowdErrorResponse.class));
         }
     }
-    
+
+    @Caching(evict={
+      @CacheEvict(value="authentication", key="#username"),
+      @CacheEvict(value="users", key="#username"),
+      @CacheEvict(value="presence", key="#username")
+    })
     @Override
     public void deleteUser(String username) throws UnknownUserException {
         ClientResponse crowdResponse = crowd.path("user")
@@ -104,6 +112,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         }
     }
 
+    @CacheEvict(value="authentication", key="username")
     @Override
     public void setUserPassword(String username, String newPassword) throws UnknownUserException {
         CrowdUserPassword request = new CrowdUserPassword(newPassword);
@@ -121,6 +130,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         }
     }
 
+    @Cacheable(value="users", key="#username")
     @Override
     public U getUser(String username) throws UnknownUserException {
         ClientResponse crowdResponse = crowd.path("user")
@@ -136,6 +146,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         }
     }
 
+    @Cacheable(value="presence", key="#username")
     @Override
     public boolean userExists(String username) {
         ClientResponse crowdResponse = crowd.path("user")
@@ -149,6 +160,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
         }
     }
 
+    @Cacheable(value="authentication", key="#username")
     @Override
     public U authenticate(String username, String password) throws InvalidCredentialsException {
         CrowdUserPassword request = new CrowdUserPassword(password);
@@ -179,6 +191,7 @@ public class CrowdUserStore<U extends User> implements WritableUserStore<U> {
      * crowd attribute which exists.
      * @param user 
      */
+    @CacheEvict(value="user", key="#user.name")
     private void updateUserProperties(CrowdUser user) {
         ClientResponse crowdResponse = crowd.path("user/attribute")
                                             .queryParam("username", user.getName())
