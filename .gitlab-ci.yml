@@ -14,6 +14,8 @@ deploy:
   stage: deploy
   image: maven:3.3.9-jdk-7
   script:
+    - git checkout $CI_BUILD_REF_NAME
+    - git reset --hard origin/$CI_BUILD_REF_NAME
     - git config user.email "oss@ceh.ac.uk"
     - git config user.name "Open Source Software"
     - mkdir /root/.gnupg
