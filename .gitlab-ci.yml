@@ -10,7 +10,7 @@ build:
   script: 
     - mvn clean install
 
-deploy:
+maven_central:
   stage: deploy
   image: maven:3.3.9-jdk-7
   script:
