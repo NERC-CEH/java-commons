@@ -10,6 +10,8 @@ import com.sun.jersey.api.client.WebResource;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import uk.ac.ceh.components.userstore.Group;
 import uk.ac.ceh.components.userstore.User;
 import uk.ac.ceh.components.userstore.WritableGroupStore;
@@ -29,9 +31,9 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         this.crowd = credentials.getCrowdJerseryResource();
     }
 
-    @Cacheable(value="usersGroups", key="#user.name")
+    @Cacheable(value="crowd-usersGroups", key="#user.username")
     @Override
-    public List<Group> getGroups(U user) {        
+    public List<Group> getGroups(U user) {
         ClientResponse crowdResponse = crowd.path("user/group/nested")
                                             .queryParam("username", user.getUsername())
                                             .queryParam("expand", "group")
@@ -45,8 +47,8 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-    @Cacheable(value="directGroups", key="#user.name")
-    public List<Group> getDirectGroups(U user) {        
+    @Cacheable(value="crowd-usersDirectGroups", key="#user.username")
+    public List<Group> getDirectGroups(U user) {
         ClientResponse crowdResponse = crowd.path("user/group/direct")
                                             .queryParam("username", user.getUsername())
                                             .queryParam("expand", "group")
@@ -60,7 +62,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-    @Cacheable(value="groups", key="#groupname")
+    @Cacheable(value="crowd-groups", key="#groupname")
     @Override
     public Group getGroup(String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = getCrowdGroupClientResponse(groupname);
@@ -87,7 +89,6 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-    @Cacheable(value="presence", key="#groupname")
     @Override
     public boolean isGroupInExistance(String groupname) {
         ClientResponse crowdResponse = getCrowdGroupClientResponse(groupname);
@@ -119,7 +120,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-    @CacheEvict(value="groups", key="#groupname")
+    @CacheEvict(value="crowd-groups", key="#groupname")
     @Override
     public Group updateGroup(String groupname, String description) throws IllegalArgumentException {
         CrowdGroup updatedGroup = new CrowdGroup(groupname, description);
@@ -136,10 +137,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-   @Caching(evict={
-      @CacheEvict(value="groups", key="#groupname"),
-      @CacheEvict(value="presence", key="#groupname")
-   })
+   @CacheEvict(value="crowd-groups", key="#groupname")
    @Override
     public boolean deleteGroup(String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = crowd.path("group")
@@ -152,7 +150,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-    @CacheEvict(value="usersGroups", key="#user.name")
+    @CacheEvict(value="crowd-usersGroups", key="#user.username")
     @Override
     public boolean grantGroupToUser(U user, String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = crowd.path("user/group/direct")
@@ -167,7 +165,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
 
-    @CacheEvict(value="usersGroups", key="#user.name")
+    @CacheEvict(value="crowd-usersGroups", key="#user.username")
     @Override
     public boolean revokeGroupFromUser(U user, String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = crowd.path("group/user/direct")
@@ -181,7 +179,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
     
-    @CacheEvict(value="usersGroups", allEntries=true)
+    @CacheEvict(value="crowd-usersGroups", allEntries=true)
     public boolean grantGroupToGroup(String childGroup, String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = crowd.path("group/child-group/direct")
                                             .queryParam("groupname", groupname)
@@ -195,7 +193,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
     
-    @CacheEvict(value="usersGroups", allEntries=true)
+    @CacheEvict(value="crowd-usersGroups", allEntries=true)
     public boolean revokeGroupFromGroup(String childGroup, String groupname) throws IllegalArgumentException {
         ClientResponse crowdResponse = crowd.path("group/child-group/direct")
                                             .queryParam("groupname", groupname)
@@ -238,7 +236,7 @@ public class CrowdGroupStore<U extends User> implements WritableGroupStore<U> {
         }
     }
     
-     public List<Group> getParentGroupsForGroup(String groupname) {
+    public List<Group> getParentGroupsForGroup(String groupname) {
         ClientResponse crowdResponse = crowd.path("group/parent-group/nested")
                                             .queryParam("groupname", groupname)
                                             .queryParam("expand", "group")
