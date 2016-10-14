@@ -74,6 +74,34 @@ This allows your application to create users in the following form:
       ...
     }
 
+### EhCache Configuration in spring
+
+The crowd userstore implementation is annotated with spring `@Cacheable` annotations to allow user details and group memberships to be cached locally for quick access. This is optional but **highly recommended**. To enable [EhCaching](http://www.ehcache.org/) additional dependencies will be required by you project. If managing with Maven then these will be:
+
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>net.sf.ehcache</groupId>
+        <artifactId>ehcache</artifactId>
+        <version>2.10.2.2.21</version>
+        <scope>provided</scope>
+    </dependency>
+
+With these in place, you will need to enable caching within spring. An example configuration might look like:
+
+    @Configuration
+    @EnableCaching
+    public class CachingConfig {
+        @Bean
+        public CacheManager cacheManager() {
+            return new EhCacheCacheManager(CrowdEhCacheSupport.createCacheManager());
+        }
+    }
+
 ### Spring Security
 
 A component is provided to hook the userstore-api to hook into spring security. An example javaconfig setup of this is provided below
