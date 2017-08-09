@@ -74,9 +74,9 @@ class TransformDomainUserToCrowdUser<U extends User> implements Function<U, Crow
     
     private static List<String> valueToStringList(Object value, Type desiredType) {
         if(value == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        else if(typeToken.isAssignableFrom(desiredType)) {
+        else if(typeToken.isSupertypeOf(desiredType)) {
             return (List)value;
         }
         else {
