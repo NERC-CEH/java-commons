@@ -39,7 +39,7 @@ class TransformCrowdUserToDomainUser<U extends User> implements Function<CrowdUs
             Type desiredTypeForURI = factory.getDesiredTypeForURI(attribute.getName());
                     
             userBuilder.set(attribute.getName(), 
-                desiredTypeForURI == null || typeToken.isAssignableFrom(desiredTypeForURI)
+                desiredTypeForURI == null || typeToken.isSupertypeOf(desiredTypeForURI)
                     ? attribute.getValues()
                     : convertToDesired(attribute.getValues(), desiredTypeForURI));
         }
@@ -47,7 +47,7 @@ class TransformCrowdUserToDomainUser<U extends User> implements Function<CrowdUs
     }
     
     private Object convertToDesired(List<String> toConvert, Type desired) {
-        if(TypeToken.of(List.class).isAssignableFrom(desired)) {
+        if(TypeToken.of(List.class).isSupertypeOf(desired)) {
             ParameterizedType type = (ParameterizedType)desired;
             final Type desiredType = type.getActualTypeArguments()[0];
             return new ArrayList(Collections2.transform(toConvert, new Function<String, Object>() {

@@ -58,13 +58,15 @@ public class KerberosAuthenticationFilterTest {
         FilterChain chain = mock(FilterChain.class);
         request.addHeader("Authorization", "Negotiate blah");
         when(ticketValidator.validateTicket(any(byte[].class))).thenReturn("username@ad");
+        when(authenticationManager.authenticate(any(PreAuthenticatedAuthenticationToken.class)))
+                .thenReturn(mock(Authentication.class));
         
         //When
         filter.doFilterInternal(request, response, chain);
         
         //Then
         verify(authenticationManager).authenticate(any(PreAuthenticatedAuthenticationToken.class));
-        verify(rememberMeServices).loginSuccess(eq(request), eq(response), any(PreAuthenticatedAuthenticationToken.class));
+        verify(rememberMeServices).loginSuccess(eq(request), eq(response), any(Authentication.class));
         verify(chain).doFilter(request, response);
     }
     
@@ -81,7 +83,7 @@ public class KerberosAuthenticationFilterTest {
         //Then
         assertEquals("Expected www auth header", response.getHeader("WWW-Authenticate"), "Negotiate");
         assertEquals("Expected 401 error", response.getStatus(), 401);
-        verify(chain,never()).doFilter(request, response);
+        verify(chain, never()).doFilter(request, response);
     }
     
     @Test

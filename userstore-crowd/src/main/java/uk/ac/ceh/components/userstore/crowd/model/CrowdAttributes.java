@@ -1,6 +1,7 @@
 package uk.ac.ceh.components.userstore.crowd.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CrowdAttributes {
     private List<CrowdAttribute> attributes = new ArrayList<>();
     
@@ -24,7 +25,7 @@ public class CrowdAttributes {
     
     @Data
     @JsonIgnoreProperties(ignoreUnknown=true)
-    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CrowdAttribute {

@@ -27,7 +27,7 @@ public class RdfResponse {
         } else if(concepts != null) {
             return concepts;
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
