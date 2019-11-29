@@ -38,7 +38,7 @@ public class RdfVocabulary implements Vocabulary {
     @Override
     public List<Concept> getAllConcepts() throws VocabularyException {
         try {
-            RdfResponse rdf = resource.accept("application/rdf+xml").get(RdfResponse.class);
+            RdfResponse rdf = resource.accept("application/rdf+xml", "application/octet-stream").get(RdfResponse.class);
             return new ArrayList<Concept>(rdf.getDescriptions());
         }
         catch(UniformInterfaceException | ClientHandlerException ex) {
