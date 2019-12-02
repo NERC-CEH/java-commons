@@ -4,6 +4,17 @@
 
 A suite of common java components used for CEH applications. Below is a description of the various aspects which this project covers.
 
+## PUBLISHING TO MAVEN CENTRAL
+
+Gitlab CI pipeline does not work, need to do this locally.
+
+Need to install GPG key (available in CI variables)
+
+    base64 -d private.key | gpg --import
+    mvn release:prepare release:perform -Dusername=oss -Dpassword={OSS password} -Darguments=-Dgpg.keyname=chrisjohnson1988@gmail.com
+    
+Will be prompted for gpg.passphrase (available in CI variables)
+
 ## Datastore api
 
 The datastore api provides a mechanism to store, retrieve and version streams of data. It hooks in to the [Userstore api](#userstore-api) to provide an audit of who and when an input stream has changed. The reference implementation is powered by JGit, so ultimately creates a git repository.
