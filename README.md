@@ -8,12 +8,21 @@ A suite of common java components used for CEH applications. Below is a descript
 
 Gitlab CI pipeline does not work, need to do this locally.
 
-Need to install GPG key (available in CI variables)
+Need to install GPG key (available in CI variables) to sign package. Copy secret key from CI variables to file _private.key_, then import.
 
     base64 -d private.key | gpg --import
+
+Release the package to Maven Central via OSS Sonatype repository.
+
     mvn release:prepare release:perform -Dusername=oss -Dpassword={OSS password} -Darguments=-Dgpg.keyname=chrisjohnson1988@gmail.com
     
 Will be prompted for gpg.passphrase (available in CI variables)
+
+Then need to go to https://oss.sonatype.org/ to release package. See https://central.sonatype.org/pages/releasing-the-deployment.html for details.
+
+Need to login with _oss_ username and password.
+* Under Build Promotion click Staging Repositories
+* Select Repository, if it looks complete need to _Close_, _Refresh_, _Release_ to make the package available for use.
 
 ## Datastore api
 
