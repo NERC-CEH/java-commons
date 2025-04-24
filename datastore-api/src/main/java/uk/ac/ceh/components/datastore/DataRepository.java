@@ -14,7 +14,8 @@ public interface DataRepository<A extends DataAuthor> {
     List<String> getFiles() throws DataRepositoryException;
     List<String> getFiles(String revision) throws DataRepositoryException;
     List<DataRevision<A>> getRevisions(String filename) throws DataRepositoryException;
-    
+    List<DataRevision<A>> getRevisions(long timeLimitInSecond, String commitMsg) throws DataRepositoryException;
+
     DataOngoingCommit<A> submitData(String filename, DataWriter writer);
     DataOngoingCommit<A> deleteData(String toDelete);
 }
