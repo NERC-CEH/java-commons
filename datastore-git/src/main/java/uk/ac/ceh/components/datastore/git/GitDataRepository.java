@@ -4,8 +4,6 @@ import com.google.common.eventbus.EventBus;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 import org.eclipse.jgit.api.AddCommand;
