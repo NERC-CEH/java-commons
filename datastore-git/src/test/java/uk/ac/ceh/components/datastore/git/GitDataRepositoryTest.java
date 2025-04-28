@@ -3,8 +3,8 @@ package uk.ac.ceh.components.datastore.git;
 import com.google.common.eventbus.EventBus;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.Timestamp;
 import java.util.List;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
@@ -469,7 +469,31 @@ public class GitDataRepositoryTest {
         //Then
         assertNull("Expected latestRevision to be null", latestRevision);
     }
-    
+
+    @Test
+    public void getRevisionsByCommitMessage() throws UnknownUserException, DataRepositoryException, IOException {
+        //Given
+        String filename = "new.file";
+        GitTestUser testUser = userStore.getUser("testuser");
+        String file = "file";
+        String file2 = "file2";
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        long timeLimitInSecond = (currentTimestamp.getTime() / 1000) - 157680000;    // 5 year before
+
+        //When
+        dataStore.submitData(filename, new StringDataWriter(file))
+                .commit(testUser, "This is a test message");
+        dataStore.submitData(filename, new StringDataWriter(file2))
+                .commit(testUser, "This is another test message");
+
+        //Then
+        List<DataRevision<GitTestUser>> revisions = dataStore.getRevisions(timeLimitInSecond, "This is a test message");
+        assertEquals("Expected 1 revision history for commit message \"This is a test message\"", 1, revisions.size());
+        String revisionId = revisions.get(0).getRevisionID();
+        byte[] gitFilebytes = IOUtils.toByteArray(dataStore.getData(revisionId, filename).getInputStream());
+        assertArrayEquals("Did not get expected file", file.getBytes(), gitFilebytes);
+    }
+
     @After
     public void closeRepository() throws IOException {
         dataStore.close();

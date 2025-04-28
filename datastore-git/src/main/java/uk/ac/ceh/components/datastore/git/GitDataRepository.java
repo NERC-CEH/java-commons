@@ -4,9 +4,7 @@ import com.google.common.eventbus.EventBus;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
@@ -25,6 +23,9 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.AndRevFilter;
+import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
+import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
@@ -204,6 +205,47 @@ public class GitDataRepository<A extends DataAuthor & User> implements DataRepos
             }
         } 
         else {
+            throw new GitRevisionNotFoundException("The repository has no head");
+        }
+    }
+
+    /**
+     * The following method will return a list of revisions for a given commit message.
+     * The revisions will be ordered in the list so that the first element is the
+     * most modern revision of the file and the last the the initial revision of
+     * the file.
+     * @param timeLimitInSecond unix time in second that history search starts from this time
+     * @param commitMsg only the commit message with regex match will be returned
+     * @return A list of revisions ordered as specified above.
+     * @throws DataRepositoryException
+     */
+    @Override
+    public List<DataRevision<A>> getRevisions(long timeLimitInSecond, String commitMsg) throws DataRepositoryException {
+        ObjectId revision = resolveRevision(Constants.HEAD);
+        if (revision != null) { //Only perform the git log if the repo has a HEAD
+            List<DataRevision<A>> toReturn = new ArrayList<>();
+            try {
+                RevWalk revWalk = new RevWalk(repository);
+                revWalk.markStart(revWalk.parseCommit(repository.resolve(Constants.HEAD)));
+
+                if (timeLimitInSecond == 0) {
+                    revWalk.setRevFilter(MessageRevFilter.create(commitMsg));
+                } else {
+                    revWalk.setRevFilter(AndRevFilter.create(Arrays.asList(
+                        CommitTimeRevFilter.after(timeLimitInSecond),
+                        MessageRevFilter.create(commitMsg)
+                    )));
+                }
+
+                for (RevCommit commit : revWalk) {
+                    A author = getAuthor(commit.getAuthorIdent());
+                    toReturn.add(new GitDataRevision<>(author, commit));
+                }
+                return toReturn;
+            } catch (IOException | UnknownUserException ex) {
+                throw new DataRepositoryException(ex);
+            }
+        } else {
             throw new GitRevisionNotFoundException("The repository has no head");
         }
     }
