@@ -16,5 +16,5 @@ build:
     - base64 -d <<< $SECRING_GPG_64 > /root/.gnupg/secring.gpg
     - base64 -d <<< $PUBRING_GPG_64 > /root/.gnupg/pubring.gpg
     - echo "$SETTINGS_XML" > /root/.m2/settings.xml
-    - mvn release:prepare release:perform -B -Dusername=$GITLAB_USERNAME -Dpassword=$GITLAB_PASSWORD -Darguments=-Dgpg.passphrase=$GPG_PASS | sed -e "s/$GITLAB_PASSWORD/*******/g"
+    - mvn release:prepare release:perform -B -Dusername=$GITLAB_USERNAME -Dpassword=$GITLAB_DEPLOY_TOKEN -Darguments=-Dgpg.passphrase=$GPG_PASS | sed -e "s/$GITLAB_DEPLOY_TOKEN/*******/g"
   when: manual

@@ -14,7 +14,7 @@ Need to install GPG key (available in CI variables) to sign package. Copy secret
 
 Release the package to Maven Central via OSS Sonatype repository.
 
-    mvn release:prepare release:perform -Dusername=oss -Dpassword={OSS password} -Darguments=-Dgpg.keyname=chrisjohnson1988@gmail.com
+    mvn release:prepare release:perform -Dusername=oss -Dpassword={OSS access token} -Darguments=-Dgpg.keyname=chrisajohnson1988@gmail.com
     
 Will be prompted for gpg.passphrase (available in CI variables)
 
