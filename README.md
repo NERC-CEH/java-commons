@@ -8,14 +8,19 @@ A suite of common java components used for CEH applications. Below is a descript
 
 Gitlab CI pipeline does not work, need to do this locally.
 
-Need to install GPG key (available in CI variables) to sign package. Copy secret key from CI variables to file _private.key_, then import.
+The local build and deploy on 30 Apr 2025 are based on corretto-1.8.0_452 and maven 3.9.9  
+
+Create settings.xml in ~/.m2 directory, the content is available in CI variables,
+and then change the username and password with access user token which can be obtained from user profile after login sonatype https://oss.sonatype.org/. 
+
+Need to install GPG key (available in CI variables) to sign package. Copy secret key from CI variables to file "private.key", then import.
 
     base64 -d private.key | gpg --import
 
-Release the package to Maven Central via OSS Sonatype repository.
+Release the package to Maven Central via OSS Sonatype repository, the access token is available in CI variables.
 
-    mvn release:prepare release:perform -Dusername=oss -Dpassword={OSS access token} -Darguments=-Dgpg.keyname=chrisajohnson1988@gmail.com
-    
+    mvn release:prepare release:perform -Dusername=oss -Dpassword={access token} -Darguments="-Dgpg.keyname=chrisajohnson1988@gmail.com -Dmaven.javadoc.skip=true"
+
 Will be prompted for gpg.passphrase (available in CI variables)
 
 Then need to go to https://oss.sonatype.org/ to release package. See https://central.sonatype.org/pages/releasing-the-deployment.html for details.
